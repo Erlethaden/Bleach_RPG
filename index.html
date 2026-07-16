@@ -546,7 +546,7 @@ var FIREBASE_CONFIG = {
   appId: "1:491721664190:web:4ce496bb336a39f3dc60ef"
 };
 /* UID właściciela (pierwszy MG/admin). Zobaczysz go w Firebase → Authentication → Users. */
-var ADMIN_UID = 'WKLEJ_SWOJE_UID';
+var ADMIN_UID = 'yKpSR0Ar1zbAmHedbTuyeA3QvE93';
 var MAX_CHARS = 5;              /* limit postaci na konto — anty-duchy */
 var SAVE_KEY  = 'reiatsu100-v1';
 
@@ -1098,11 +1098,22 @@ function afterLogin(u){
   el('tab-bar').style.display='flex';
   loadRole(u.uid); loadCharList(); writeLog('login',{});
 }
+/* sprzątanie logów bez TTL: admin przy każdym logowaniu kasuje przeterminowane */
+function purgeOldLogs(){
+  if(!fbDB || !userRole.admin) return;
+  fbDB.collection('logs').where('deleteAt','<=',firebase.firestore.Timestamp.now()).limit(200).get()
+    .then(function(q){
+      if(q.empty) return;
+      var b=fbDB.batch();
+      q.forEach(function(d0){ b.delete(d0.ref); });
+      return b.commit();
+    }).catch(function(){});
+}
 function loadRole(uid){
-  if(uid===ADMIN_UID){ userRole={gm:true,admin:true}; applyRole(); return; }
+  if(uid===ADMIN_UID){ userRole={gm:true,admin:true}; applyRole(); purgeOldLogs(); return; }
   fbDB.collection('roles').doc(uid).get().then(function(d0){
     userRole = d0.exists ? {gm:!!d0.data().gm, admin:!!d0.data().admin} : {gm:false,admin:false};
-    applyRole();
+    applyRole(); purgeOldLogs();
   }).catch(function(){ applyRole(); });
 }
 function applyRole(){ el('tbtn-gm').style.display = (userRole.gm||userRole.admin)?'':'none'; }
