@@ -1406,49 +1406,79 @@ function gmRebuildOwn(){
     return Promise.all(jobs).then(function(){ el('gm-live').textContent='odbudowano '+jobs.length+' wpisów — zapisz kartę, żeby odświeżyć pełne dane'; });
   }).catch(function(e){ el('gm-live').textContent='błąd odbudowy: '+(e.code||e.message); });
 }
+function gdRow(l,v){ return '<div class="gd-row"><span class="gd-l">'+l+'</span><span class="gd-v">'+v+'</span></div>'; }
 function gmDetail(id){
   var c=gmRoster.filter(function(x){return x.id===id;})[0]; if(!c) return;
   gmOpenId=id;
-  var d0=c.charData||{};
-  el('gd-title').textContent=c.imie||'???';
+  var d0=c.charData||{}, A=d0.attrs||{};
+  function at(k){ return num(A[k],8); }
+  function artv(a){ var x=(d0.arts||{})[a.id]||{}; return at(a.b[0])+at(a.b[1])+10+num(x.a)+num(x.g); }
+  function skv(sx){ var x=(d0.skills||{})[sx.id]||{}; return at(sx.b[0])+at(sx.b[1])+num(x.a)+num(x.g); }
+  function kr(v,art){ return (art==='zanjutsu' && (d0.techs||{})['zan120']) ? Math.max(1,Math.ceil(v/5)) : Math.max(1,Math.ceil(v/10)); }
+
+  el('gd-title').textContent=(c.imie||'???')+(d0.gotowa?'':'  · w budowie');
   var h='';
-  h+='<div class="gd-row"><span class="gd-l">Gracz</span><span class="gd-v">'+escHtml(c.nick||'—')+'</span></div>';
-  h+='<div class="gd-row"><span class="gd-l">Dywizja / ranga</span><span class="gd-v">'+escHtml(c.dywizja||'—')+' · '+escHtml(c.ranga||'—')+'</span></div>';
-  h+='<div class="gd-row"><span class="gd-l">Tier</span><span class="gd-v">bazowy '+(c.tier||0)+' · efektywny '+(c.tierEf||0)+' ('+(c.rel==='seal'?'zapieczętowane':c.rel)+')</span></div>';
-  h+='<div class="gd-row"><span class="gd-l">PŻ / PR</span><span class="gd-v">'+c.pz+'/'+c.pzMax+' · '+c.pr+'/'+c.prMax+'</span></div>';
-  h+='<div class="gd-row"><span class="gd-l">DR / Wyczerpanie</span><span class="gd-v">'+(c.dr||0)+' · '+(c.wycz||0)+' pozioma(ów)</span></div>';
+  h+='<div class="gd-sec">KIM JEST</div>';
+  h+=gdRow('Gracz', escHtml(c.nick||'—'));
+  h+=gdRow('Dywizja', escHtml(DIVISIONS[num(d0['f-dywizja'],1)-1]||'—'));
+  h+=gdRow('Ranga', escHtml(d0['f-ranga']||'—'));
+  h+=gdRow('Tier', 'bazowy '+(c.tier||0)+' · efektywny '+(c.tierEf||0)+
+      ' ('+(c.rel==='bankai'?'Bankai':c.rel==='shikai'?'Shikai':'zapieczętowane')+
+      (num(d0['f-maska'],0)?' + maska':'')+(num(d0['f-gentei'],0)?' − gentei '+d0['f-gentei']:'')+')');
+  h+=gdRow('PD', 'wolne '+num(d0['f-pd'],0)+' · wydane '+num(d0['f-pdw'],0)+' · łącznie '+(num(d0['f-pd'],0)+num(d0['f-pdw'],0)));
+
+  h+='<div class="gd-sec">STAN</div>';
+  h+=gdRow('PŻ', c.pz+' / '+c.pzMax);
+  h+=gdRow('PR', c.pr+' / '+c.prMax);
+  h+=gdRow('Wyczerpanie', (c.wycz||0)+' pozioma/ów'+(c.wycz?' → −'+(c.wycz*20)+' do testów':''));
+  h+=gdRow('DR', (c.dr||0));
+  h+=gdRow('Kolejność / obrażenia', 'REF '+at('ref')+' · bonus +'+Math.floor(at('sil')/5)+' · umieranie '+Math.ceil(at('krz')/2)+' rund');
+
   h+='<div class="gd-sec">ATRYBUTY</div><div class="gd-row"><span class="gd-v">'+
-     ATTRS.map(function(a){ return a.ab+' '+num((d0.attrs||{})[a.id],8); }).join(' · ')+'</span></div>';
+     ATTRS.map(function(a){ return a.ab+' '+at(a.id); }).join(' · ')+'</span></div>';
+
   h+='<div class="gd-sec">SZTUKI</div>';
-  ARTS.forEach(function(a){
-    var b=num((d0.attrs||{})[a.b[0]],8)+num((d0.attrs||{})[a.b[1]],8);
-    var x=(d0.arts||{})[a.id]||{}; var v=b+10+num(x.a)+num(x.g);
-    h+='<div class="gd-row"><span class="gd-l">'+a.n+'</span><span class="gd-v">'+v+'% · krytyk ≤ '+Math.max(1,Math.ceil(v/10))+'</span></div>';
-  });
+  ARTS.forEach(function(a){ var v=artv(a); h+=gdRow(a.n, v+'% · krytyk ≤ '+kr(v,a.id)); });
+
   h+='<div class="gd-sec">UMIEJĘTNOŚCI</div>';
-  SKILLS.forEach(function(s){
-    var b=num((d0.attrs||{})[s.b[0]],8)+num((d0.attrs||{})[s.b[1]],8);
-    var x=(d0.skills||{})[s.id]||{}; var v=b+num(x.a)+num(x.g);
-    h+='<div class="gd-row"><span class="gd-l">'+s.n+'</span><span class="gd-v">'+v+'%</span></div>';
+  SKILLS.forEach(function(sx){ var v=skv(sx); h+=gdRow(sx.n, v+'% · krytyk ≤ '+kr(v)); });
+  (d0.cs||[]).forEach(function(x){
+    if(x && x.n) h+=gdRow(escHtml(x.n)+' *', num(x.v,0)+'% · krytyk ≤ '+kr(num(x.v,0)));
   });
+
   var tk=Object.keys(d0.techs||{});
-  if(tk.length){ h+='<div class="gd-sec">TECHNIKI</div><div class="gd-row"><span class="gd-v">'+
-    tk.map(function(k){ var t=TECHS.filter(function(x){return x.id===k;})[0]; return t?t.n:k; }).join(' · ')+'</span></div>'; }
+  h+='<div class="gd-sec">TECHNIKI ('+tk.length+')</div>';
+  h+= tk.length ? tk.map(function(k){
+        var t=TECHS.filter(function(x){return x.id===k;})[0];
+        return t ? gdRow(t.n, escHtml(t.d)) : gdRow(k,'');
+      }).join('') : '<div class="gd-row"><span class="gd-v">—</span></div>';
+
   var sk=Object.keys(d0.spells||{});
-  if(sk.length){ h+='<div class="gd-sec">ZAKLĘCIA</div><div class="gd-row"><span class="gd-v">'+
-    sk.map(function(k){ return (k[0]==='H'?'Hadō #':'Bakudō #')+k.substring(1); }).join(' · ')+'</span></div>'; }
-  if(d0['f-zan-imie']||d0['f-zan-typ']){
-    h+='<div class="gd-sec">ZANPAKUTŌ</div>';
-    h+='<div class="gd-row"><span class="gd-l">Imię / komenda</span><span class="gd-v">'+escHtml(d0['f-zan-imie']||'—')+' · '+escHtml(d0['f-zan-kom']||'—')+'</span></div>';
-    var _tn = d0['f-zan-typ']==='custom' ? (d0['f-zan-typ-x']||'własny')+' ('+(d0['f-zan-typ-b']||'—')+')' : (d0['f-zan-typ']||'—');
-    var _fn = d0['f-zan-forma']==='custom' ? (d0['f-zan-forma-x']||'własna')+' ('+(d0['f-zan-forma-b']||'—')+')' : (d0['f-zan-forma']||'—');
-    h+='<div class="gd-row"><span class="gd-l">Typ / forma</span><span class="gd-v">'+escHtml(_tn)+' · '+escHtml(_fn)+'</span></div>';
-    if(d0['f-zan-pas']) h+='<div class="gd-row"><span class="gd-l">Pasywka</span><span class="gd-v">'+escHtml(d0['f-zan-pas'])+'</span></div>';
-    if(d0['f-zan-akt']) h+='<div class="gd-row"><span class="gd-l">Aktywka</span><span class="gd-v">'+escHtml(d0['f-zan-akt'])+'</span></div>';
-    if(d0['f-zan-bankai']) h+='<div class="gd-row"><span class="gd-l">Bankai</span><span class="gd-v">'+escHtml(d0['f-zan-bankai'])+'</span></div>';
-  }
-  if(d0['f-rany']){ h+='<div class="gd-sec">TRWAŁE RANY</div><div class="gd-row"><span class="gd-v" style="white-space:pre-wrap">'+escHtml(d0['f-rany'])+'</span></div>'; }
-  if(d0['f-notatki']){ h+='<div class="gd-sec">NOTATKI</div><div class="gd-row"><span class="gd-v" style="white-space:pre-wrap">'+escHtml(d0['f-notatki'])+'</span></div>'; }
+  h+='<div class="gd-sec">ZAKLĘCIA ('+sk.length+')</div>';
+  if(sk.length){
+    sk.sort(function(a,b){ return num(a.substring(1))-num(b.substring(1)); }).forEach(function(k){
+      var nr=num(k.substring(1)), hado=k[0]==='H';
+      var row=(hado?HADO:BAKUDO).filter(function(x){return x[0]===nr;})[0];
+      h+=gdRow((hado?'Hadō #':'Bakudō #')+nr, row?escHtml(row[1])+' — '+escHtml(row[3]||''):'');
+    });
+  } else h+='<div class="gd-row"><span class="gd-v">—</span></div>';
+  (d0.sp||[]).forEach(function(x){ if(x && x.n) h+=gdRow('autorskie: '+escHtml(x.n), escHtml(x.x||'')); });
+
+  h+='<div class="gd-sec">ZANPAKUTŌ</div>';
+  h+=gdRow('Imię', escHtml(d0['f-zan-imie']||'—'));
+  h+=gdRow('Komenda', escHtml(d0['f-zan-kom']||'—'));
+  var _tn = d0['f-zan-typ']==='custom' ? (d0['f-zan-typ-x']||'własny')+' (bonus: '+(d0['f-zan-typ-b']||'—')+')' : (d0['f-zan-typ']||'—');
+  var _fn = d0['f-zan-forma']==='custom' ? (d0['f-zan-forma-x']||'własna')+' (bonus: '+(d0['f-zan-forma-b']||'—')+')' : (d0['f-zan-forma']||'—');
+  h+=gdRow('Typ', escHtml(_tn));
+  h+=gdRow('Forma', escHtml(_fn));
+  if(d0['f-zan-pas'])    h+=gdRow('Pasywka', escHtml(d0['f-zan-pas']));
+  if(d0['f-zan-akt'])    h+=gdRow('Aktywka', escHtml(d0['f-zan-akt']));
+  if(d0['f-zan-bankai']) h+=gdRow('Bankai', escHtml(d0['f-zan-bankai']));
+
+  if(d0['f-rany'])    h+='<div class="gd-sec">TRWAŁE RANY</div><div class="gd-row"><span class="gd-v" style="white-space:pre-wrap">'+escHtml(d0['f-rany'])+'</span></div>';
+  if(d0['f-notatki']) h+='<div class="gd-sec">NOTATKI</div><div class="gd-row"><span class="gd-v" style="white-space:pre-wrap">'+escHtml(d0['f-notatki'])+'</span></div>';
+  h+='<div class="gd-row" style="margin-top:8px"><span class="gd-v" style="color:var(--t0);font-size:9px">Ostatni zapis: '+timeAgo(c.lastModified)+'</span></div>';
+
   el('gd-body').innerHTML=h;
   el('gm-detail').classList.add('open');
 }
