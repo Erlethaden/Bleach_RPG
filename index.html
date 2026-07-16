@@ -471,9 +471,10 @@ button,input,select,textarea{font-family:'JetBrains Mono',monospace}
 
   <div class="gm-pane on" id="gmp-roster">
     <div style="display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap;align-items:center">
-      <button class="btn btn-sm" onclick="gmLoadRoster()">Odśwież</button>
+      <button class="btn btn-sm" onclick="gmLoadRoster(true)">Odśwież</button>
       <button class="btn btn-sm btn-dim" onclick="gmAddAllToCombat()">Dodaj wszystkich do kolejki</button>
-      <span style="font-size:9px;color:var(--t0)">Podgląd żywy: dane spływają z kart graczy przy każdym zapisie.</span>
+      <button class="btn btn-sm btn-dim" onclick="gmRebuildOwn()" title="wypycha do drużyny wpisy z Twoich własnych kart">Odbuduj z moich kart</button>
+      <span style="font-size:9px;color:var(--t0)" id="gm-live">podgląd żywy · dane spływają przy każdym zapisie karty</span>
     </div>
     <div class="gm-grid" id="gm-roster-grid"></div>
     <div class="empty" id="gm-empty" style="display:none">Brak kart w chmurze. Gracz musi zapisać postać z imieniem.</div>
@@ -504,6 +505,9 @@ button,input,select,textarea{font-family:'JetBrains Mono',monospace}
 
   <div style="display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap;align-items:center">
     <button class="btn btn-sm" onclick="admLoad()">Odśwież wszystko</button>
+    <button class="btn btn-sm btn-dim" onclick="admExportAll()">Backup ⭳ (JSON)</button>
+    <button class="btn btn-sm btn-amber" onclick="el('adm-file').click()">Przywróć z backupu ⭱</button>
+    <input type="file" id="adm-file" accept=".json,application/json" style="display:none" onchange="admImportFile(this)">
     <span style="font-size:9px;color:var(--t0)" id="adm-status">—</span>
   </div>
 
@@ -1325,41 +1329,69 @@ function showGmTab(n){
   ['roster','walka'].forEach(function(t){ el('gmp-'+t).classList.toggle('on',t===n); });
   document.querySelectorAll('.gm-tab').forEach(function(b,i){ b.classList.toggle('active', ['roster','walka'][i]===n); });
 }
-function gmLoadRoster(){
+var gmUnsub=null;
+function gmRender(){
+  el('gm-count').textContent='('+gmRoster.length+')';
+  el('gm-empty').style.display = gmRoster.length?'none':'block';
+  var g=el('gm-roster-grid'); g.innerHTML='';
+  gmRoster.forEach(function(c){
+    var card=document.createElement('div'); card.className='gm-card';
+    card.onclick=function(){ gmDetail(c.id); };
+    card.innerHTML=
+      '<div class="gm-card-name">'+escHtml(c.imie||'???')+' <span class="tier-chip">tier '+(c.tierEf||0)+'</span></div>'+
+      '<div class="gm-card-sub">'+escHtml(c.dywizja?c.dywizja+'. dywizja':'—')+' · '+escHtml(c.ranga||'')+(c.nick?' · '+escHtml(c.nick):'')+'</div>'+
+      bar('PŻ',c.pz,c.pzMax)+bar('PR',c.pr,c.prMax)+
+      '<div class="gm-stat"><span class="gm-stat-l">STAN</span><span class="gm-stat-v" style="min-width:0;flex:1">'+
+        (c.rel==='bankai'?'BANKAI':c.rel==='shikai'?'Shikai':'zapieczętowane')+
+        (c.wycz?' · wycz. '+c.wycz+' pozioma/ów':'')+(c.dr?' · DR '+c.dr:'')+'</span></div>'+
+      '<div class="gm-ts">'+timeAgo(c.lastModified)+'</div>';
+    g.appendChild(card);
+  });
+}
+function gmSetRoster(docs){
+  gmRoster = docs.map(function(x){ var o=x.data(); o.id=x.id; return o; })
+    .sort(function(a,b){ return (b.tierEf||0)-(a.tierEf||0) || (a.imie||'').localeCompare(b.imie||''); });
+  gmRender();
+}
+function gmError(e){
+  el('gm-empty').style.display='block';
+  el('gm-empty').innerHTML='Drużyna nie wczytała się: <b>'+escHtml(e.code||e.message||'?')+'</b>.<br>'+
+    (String(e.code).indexOf('permission')>=0
+      ? 'To reguły Firestore. Wklej i opublikuj <b>firestore.rules</b> jeszcze raz — kolekcja <b>roster</b> musi mieć <b>allow read: if signedIn()</b>.'
+      : 'Sprawdź połączenie i odśwież.');
+}
+function gmLoadRoster(force){
   if(!fbDB||!fbUser) return;
-  fbDB.collection('roster').get().then(function(snap){
-    gmRoster=snap.docs.map(function(x){ var o=x.data(); o.id=x.id; return o; })
-      .sort(function(a,b){ return (b.tierEf||0)-(a.tierEf||0) || (a.imie||'').localeCompare(b.imie||''); });
-    el('gm-count').textContent='('+gmRoster.length+')';
-    el('gm-empty').style.display = gmRoster.length?'none':'block';
-    var g=el('gm-roster-grid'); g.innerHTML='';
-    gmRoster.forEach(function(c){
-      var card=document.createElement('div'); card.className='gm-card';
-      card.onclick=function(){ gmDetail(c.id); };
-      card.innerHTML=
-        '<div class="gm-card-name">'+escHtml(c.imie||'???')+' <span class="tier-chip">tier '+(c.tierEf||0)+'</span></div>'+
-        '<div class="gm-card-sub">'+escHtml(c.dywizja?c.dywizja+'. dywizja':'—')+' · '+escHtml(c.ranga||'')+(c.nick?' · '+escHtml(c.nick):'')+'</div>'+
-        bar('PŻ',c.pz,c.pzMax)+bar('PR',c.pr,c.prMax)+
-        '<div class="gm-stat"><span class="gm-stat-l">STAN</span><span class="gm-stat-v" style="min-width:0;flex:1">'+
-          (c.rel==='bankai'?'BANKAI':c.rel==='shikai'?'Shikai':'zapieczętowane')+
-          (c.wycz?' · wycz. −'+(c.wycz*20):'')+(c.dr?' · DR '+c.dr:'')+'</span></div>'+
-        '<div class="gm-ts">'+timeAgo(c.lastModified)+'</div>';
-      g.appendChild(card);
+  if(gmUnsub && !force) return;
+  if(gmUnsub){ gmUnsub(); gmUnsub=null; }
+  el('gm-live').textContent='podgląd żywy · dane spływają przy każdym zapisie karty';
+  gmUnsub = fbDB.collection('roster').onSnapshot(function(snap){
+    gmSetRoster(snap.docs);
+    if(!snap.size) el('gm-empty').textContent='Brak kart w chmurze. Gracz musi zapisać postać z imieniem — wtedy pojawi się tu sama, bez odświeżania.';
+  }, function(e){ gmError(e); });
+}
+/* awaryjnie: wypchnij do drużyny wpisy ze swoich własnych kart */
+function gmRebuildOwn(){
+  if(!fbDB||!fbUser) return;
+  el('gm-live').textContent='odbudowuję…';
+  fbDB.collection('users').doc(fbUser.uid).collection('characters').get().then(function(q){
+    var jobs=[];
+    q.forEach(function(d0){
+      var c=d0.data(), data=c.charData||{};
+      if(!c.imie) return;
+      jobs.push(fbDB.collection('roster').doc(d0.id).set({
+        uid:fbUser.uid, nick:userNick||'?', imie:c.imie,
+        dywizja:data['f-dywizja']||'', ranga:data['f-ranga']||'',
+        tier:num(data['f-tier'],0), tierEf:num(data['f-tier'],0), rel:data['f-rel']||'seal',
+        pz:num(data['f-pz'],0), pzMax:num(data['f-pz'],0),
+        pr:num(data['f-pr'],0), prMax:num(data['f-pr'],0),
+        dr:num(data['f-dr-manual'],0), wycz:num(data['f-wycz'],0),
+        ref:0, hoho:0, zanjutsu:0, hakuda:0, kido:0, step10:20, zanzo:false,
+        lastModified:firebase.firestore.FieldValue.serverTimestamp(), charData:data
+      }, {merge:true}));
     });
-  }).catch(function(e){ el('gm-empty').style.display='block'; el('gm-empty').textContent='Brak dostępu do drużyny: '+e.code; });
-}
-function bar(l,v,m){
-  v=num(v,0); m=num(m,0);
-  var p=m?Math.max(0,Math.min(100,Math.round(v/m*100))):0;
-  var c=p>50?'var(--c2)':p>25?'var(--a2)':'var(--r2)';
-  return '<div class="gm-stat"><span class="gm-stat-l">'+l+'</span><span class="gm-stat-v">'+v+'/'+m+'</span>'+
-         '<div class="gm-bar"><div class="gm-bar-f" style="width:'+p+'%;background:'+c+'"></div></div></div>';
-}
-function timeAgo(ts){
-  if(!ts||!ts.seconds) return '';
-  var s=Math.round(Date.now()/1000-ts.seconds);
-  if(s<60) return s+' s temu'; if(s<3600) return Math.round(s/60)+' min temu';
-  if(s<86400) return Math.round(s/3600)+' h temu'; return Math.round(s/86400)+' dni temu';
+    return Promise.all(jobs).then(function(){ el('gm-live').textContent='odbudowano '+jobs.length+' wpisów — zapisz kartę, żeby odświeżyć pełne dane'; });
+  }).catch(function(e){ el('gm-live').textContent='błąd odbudowy: '+(e.code||e.message); });
 }
 function gmDetail(id){
   var c=gmRoster.filter(function(x){return x.id===id;})[0]; if(!c) return;
@@ -1702,6 +1734,102 @@ function admWipeUser(uid, nick){
   jobs.push(fbDB.collection('roles').doc(uid).delete().catch(function(){}));
   jobs.push(fbDB.collection('users').doc(uid).delete().catch(function(){}));
   Promise.all(jobs).then(function(){ admStatus('Wyczyszczono dane: '+nick); admLoad(); });
+}
+
+/* ─── backup: cała kampania do pliku i z powrotem ─── */
+function admExportAll(){
+  if(!fbDB || !userRole.admin) return;
+  admStatus('zbieram dane…');
+  var out = { app:'reiatsu-100', v:1, exportedAt:new Date().toISOString(), users:[], roles:[], names:[], chars:[] };
+  fbDB.collection('users').get().then(function(us){
+    out.users = us.docs.map(function(d0){ var o=d0.data(); return { uid:d0.id, nick:o.nick||'', email:o.email||'' }; });
+    return Promise.all(us.docs.map(function(d0){
+      return fbDB.collection('users').doc(d0.id).collection('characters').get().then(function(cs){
+        cs.forEach(function(c){
+          var x=c.data();
+          out.chars.push({ uid:d0.id, id:c.id, imie:x.imie||'', dywizja:x.dywizja||'',
+                           nameSlug:x.nameSlug||slugify(x.imie||''), charData:x.charData||{} });
+        });
+      }).catch(function(){});
+    }));
+  }).then(function(){
+    return fbDB.collection('roles').get().then(function(q){
+      out.roles = q.docs.map(function(d0){ var o=d0.data(); return { uid:d0.id, gm:!!o.gm, admin:!!o.admin }; });
+    });
+  }).then(function(){
+    return fbDB.collection('names').get().then(function(q){
+      out.names = q.docs.map(function(d0){ var o=d0.data(); return { slug:d0.id, uid:o.uid||'', charId:o.charId||'', nick:o.nick||'' }; });
+    });
+  }).then(function(){
+    var stamp = new Date().toISOString().slice(0,16).replace(/[:T]/g,'-');
+    var blob = new Blob([JSON.stringify(out,null,1)], {type:'application/json'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'reiatsu100-backup-'+stamp+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+    admStatus('Backup gotowy: '+out.chars.length+' kart, '+out.users.length+' kont.');
+  }).catch(function(e){ admStatus('Błąd backupu: '+(e.code||e.message)); });
+}
+
+function admImportFile(inp){
+  var f = inp.files && inp.files[0]; inp.value='';
+  if(!f) return;
+  var rd = new FileReader();
+  rd.onload = function(){
+    var b;
+    try { b = JSON.parse(rd.result); } catch(err){ admStatus('To nie jest poprawny plik JSON.'); return; }
+    if(b.app!=='reiatsu-100' || !b.chars){ admStatus('To nie jest backup REIATSU 100.'); return; }
+    admRestore(b);
+  };
+  rd.readAsText(f);
+}
+
+function admRestore(b){
+  var a = prompt('Przywrócić backup z '+(b.exportedAt||'?')+'?\n\n'+
+    b.chars.length+' kart · '+(b.users||[]).length+' kont · '+(b.names||[]).length+' rezerwacji imion.\n\n'+
+    'Karty o tym samym ID zostaną nadpisane. Kart, których nie ma w backupie, NIE kasuję.\n\nWpisz PRZYWRÓĆ, żeby potwierdzić:','');
+  if(a===null) return;
+  if(a.trim().toUpperCase()!=='PRZYWRÓĆ'){ admStatus('Anulowane — nic nie ruszyłem.'); return; }
+  admStatus('przywracam…');
+  var jobs=[], fails=0;
+  function fail(){ fails++; }
+  (b.names||[]).forEach(function(n){
+    if(!n.slug) return;
+    jobs.push(fbDB.collection('names').doc(n.slug).set({ uid:n.uid||'', charId:n.charId||'', nick:n.nick||'' }, {merge:true}).catch(fail));
+  });
+  Promise.all(jobs).then(function(){
+    var j2=[];
+    (b.users||[]).forEach(function(u){
+      if(!u.uid) return;
+      j2.push(fbDB.collection('users').doc(u.uid).set({ nick:u.nick||'', email:u.email||'' }, {merge:true}).catch(fail));
+    });
+    (b.roles||[]).forEach(function(r){
+      if(!r.uid) return;
+      j2.push(fbDB.collection('roles').doc(r.uid).set({ gm:!!r.gm, admin:!!r.admin }, {merge:true}).catch(fail));
+    });
+    (b.chars||[]).forEach(function(c){
+      if(!c.uid || !c.id) return;
+      j2.push(fbDB.collection('users').doc(c.uid).collection('characters').doc(c.id).set({
+        imie:c.imie||'', dywizja:c.dywizja||'', nameSlug:c.nameSlug||slugify(c.imie||''),
+        lastModified:firebase.firestore.FieldValue.serverTimestamp(), charData:c.charData||{}
+      }, {merge:true}).catch(fail));
+      var d0=c.charData||{};
+      j2.push(fbDB.collection('roster').doc(c.id).set({
+        uid:c.uid, nick:(b.users||[]).filter(function(u){return u.uid===c.uid;}).map(function(u){return u.nick;})[0]||'?',
+        imie:c.imie||'', dywizja:d0['f-dywizja']||c.dywizja||'', ranga:d0['f-ranga']||'',
+        tier:num(d0['f-tier'],0), tierEf:num(d0['f-tier'],0), rel:d0['f-rel']||'seal',
+        pz:num(d0['f-pz'],0), pzMax:num(d0['f-pz'],0), pr:num(d0['f-pr'],0), prMax:num(d0['f-pr'],0),
+        dr:num(d0['f-dr-manual'],0), wycz:num(d0['f-wycz'],0),
+        lastModified:firebase.firestore.FieldValue.serverTimestamp(), charData:d0
+      }, {merge:true}).catch(fail));
+    });
+    return Promise.all(j2);
+  }).then(function(){
+    admStatus(fails ? ('Przywrócone, ale '+fails+' zapisów odbiły się od reguł — opublikuj aktualne firestore.rules.')
+                    : ('Przywrócono '+b.chars.length+' kart.'));
+    admLoad();
+  }).catch(function(e){ admStatus('Błąd: '+(e.code||e.message)); });
 }
 
 function admWipeLogs(){
