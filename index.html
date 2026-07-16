@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#3ba8cf">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="REIATSU">
+<title>Karta Postaci — REIATSU 100</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+:root{
+  --bg:#07090d;--bg2:#0b0f15;--bg3:#101722;--bg4:#16202e;
+  --bd1:#1c2836;--bd2:#2a3a4d;--bd3:#3c5064;
+  --c1:#1b5a72;--c2:#3ba8cf;--c3:#7fd6ef;--c4:#c9f0fb;
+  --r1:#5e1420;--r2:#b8202f;--r3:#e8455a;
+  --a1:#6b4a10;--a2:#c99418;--a3:#f0c04a;
+  --t0:#5d7186;--t1:#8aa0b4;--t2:#b9cbdb;--t3:#d8e6f0;--t4:#eef6fb;
+  --safe:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:#05070a}
+body{background:#05070a;color:var(--t2);font-family:'JetBrains Mono',monospace;font-size:12px;min-height:100vh;padding-bottom:calc(12px + var(--safe))}
+button,input,select,textarea{font-family:'JetBrains Mono',monospace}
+:focus-visible{outline:2px solid var(--c2);outline-offset:1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* AUTH BAR */
+#auth-bar{background:var(--bg4);border-bottom:1px solid var(--bd2);padding:6px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;position:sticky;top:0;z-index:200}
+#auth-bar .logo{font-family:'Shippori Mincho',serif;color:var(--c2);letter-spacing:2px;font-size:14px;font-weight:800}
+#auth-bar .logo small{font-size:9px;color:var(--t0);letter-spacing:3px;font-family:'JetBrains Mono',monospace}
+#auth-login-msg{color:var(--t0);flex:1;font-size:10px}
+.auth-user{color:var(--c3);font-size:11px;display:flex;align-items:center;gap:6px}
+.auth-avatar{width:20px;height:20px;border-radius:50%;border:1px solid var(--c1);display:none}
+#cloud-status{font-size:10px;color:var(--t0)}
+.char-select-wrap{display:flex;align-items:center;gap:5px;flex:1;min-width:180px}
+#char-select{background:var(--bg3);border:1px solid var(--bd2);color:var(--t2);font-size:11px;padding:4px 6px;flex:1;min-width:0;max-width:240px;-webkit-appearance:none;appearance:none;border-radius:2px}
+#char-select:focus{border-color:var(--c2)}
+.setup-note{font-size:9px;color:var(--a3);flex:1}
+
+/* TABS */
+#tab-bar{display:none;background:var(--bg3);border-bottom:1px solid var(--bd2);position:sticky;top:33px;z-index:190}
+#tab-bar .inner{max-width:1140px;margin:0 auto;display:flex;gap:2px;padding:0 8px}
+.tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--t0);font-size:11px;letter-spacing:2px;padding:9px 12px;cursor:pointer}
+.tab-btn.active{color:var(--c3);border-bottom-color:var(--c2)}
+
+/* BUTTONS */
+.btn{background:none;border:1px solid var(--c1);color:var(--c3);font-size:11px;padding:6px 11px;cursor:pointer;letter-spacing:1px;border-radius:2px;white-space:nowrap;min-height:30px}
+.btn:hover{background:var(--c2);color:var(--bg)}
+.btn:active{transform:translateY(1px)}
+.btn-sm{padding:3px 7px;font-size:10px;min-height:24px}
+.btn-dim{border-color:var(--bd3);color:var(--t1)}
+.btn-dim:hover{background:var(--t1);color:var(--bg)}
+.btn-amber{border-color:var(--a1);color:var(--a3)}
+.btn-amber:hover{background:var(--a2);color:var(--bg)}
+.btn-red{border-color:var(--r1);color:var(--r3)}
+.btn-red:hover{background:var(--r2);color:var(--t4)}
+.btn[disabled]{opacity:.32;cursor:not-allowed}
+.btn[disabled]:hover{background:none;color:var(--c3)}
+
+/* SHEET */
+.page-wrap{padding:10px}
+#sheet{background:var(--bg);border:1px solid var(--bd2);max-width:1140px;margin:0 auto;padding:12px}
+.sh-header{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--bd2);padding-bottom:10px;margin-bottom:12px;flex-wrap:wrap}
+.brand{flex-shrink:0;text-align:center}
+.brand-kanji{font-family:'Shippori Mincho',serif;font-size:30px;color:var(--c2);line-height:1;font-weight:800}
+.brand-name{font-family:'Shippori Mincho',serif;font-size:15px;color:var(--c3);letter-spacing:4px;font-weight:800;margin-top:2px}
+.brand-sub{font-size:7px;color:var(--t0);letter-spacing:3px;margin-top:2px}
+.id-fields{flex:1;min-width:220px;display:grid;grid-template-columns:1fr 1fr;gap:7px 12px}
+.idrow{display:flex;align-items:center;gap:8px}
+.idrow label{font-size:8px;color:var(--t0);letter-spacing:2px;text-transform:uppercase;min-width:56px;flex-shrink:0}
+.idrow input,.idrow select{flex:1;min-width:0;background:none;border:none;border-bottom:1px solid var(--bd2);color:var(--t4);font-size:14px;padding:3px 2px;letter-spacing:1px;border-radius:0}
+.idrow select{-webkit-appearance:none;appearance:none;cursor:pointer}
+.idrow select option{background:var(--bg3)}
+.idrow input:focus,.idrow select:focus{border-bottom-color:var(--c2)}
+
+/* SECTIONS */
+.sec{margin-bottom:14px}
+.stitle{font-family:'Shippori Mincho',serif;font-size:12px;color:var(--c2);letter-spacing:3px;border-bottom:1px solid var(--bd1);padding-bottom:4px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:600}
+.stitle .note{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--t0);letter-spacing:1px;font-weight:400}
+.badge{font-size:9px;padding:2px 7px;border-radius:2px;white-space:nowrap;letter-spacing:1px}
+.b-ok{background:var(--c1);color:var(--c4)}
+.b-warn{background:var(--a1);color:var(--a3)}
+.b-over{background:var(--r1);color:var(--r3)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.hint{font-size:9px;color:var(--t0);line-height:1.5;margin-top:4px}
+
+/* NUM STEPPER */
+.stat-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;padding:2px 0}
+.stat-lbl{font-size:11px;color:var(--t2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stat-lbl b{color:var(--c3);font-weight:500}
+.stat-base{font-size:8px;color:var(--t0);white-space:nowrap}
+.step{display:flex;align-items:center;gap:0;flex-shrink:0;border:1px solid var(--bd2);border-radius:2px;overflow:hidden}
+.step button{width:26px;height:26px;background:var(--bg3);border:none;color:var(--c3);font-size:14px;cursor:pointer;line-height:1}
+.step button:hover{background:var(--c1)}
+.step input{width:38px;height:26px;background:var(--bg2);border:none;border-left:1px solid var(--bd1);border-right:1px solid var(--bd1);color:var(--t4);font-size:13px;text-align:center;padding:0}
+.step input:focus{background:var(--bg4)}
+.krit{font-size:9px;color:var(--a3);min-width:34px;text-align:right;flex-shrink:0}
+.val-big{font-size:15px;color:var(--c4);min-width:34px;text-align:right;flex-shrink:0}
+
+/* DERIVED */
+.der-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.der{background:var(--bg2);border:1px solid var(--bd1);border-left:2px solid var(--c1);padding:6px 8px}
+.der-l{font-size:8px;color:var(--t0);letter-spacing:1px}
+.der-v{font-size:17px;color:var(--c3);line-height:1.2}
+.der-n{font-size:8px;color:var(--t0)}
+.der.warn{border-left-color:var(--a2)}
+.der.dang{border-left-color:var(--r2)}
+
+/* POOLS */
+.pool{background:var(--bg2);border:1px solid var(--bd1);padding:8px;margin-bottom:8px}
+.pool-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pool-name{font-size:10px;letter-spacing:2px;color:var(--t1);min-width:26px}
+.pool-in{width:52px;background:var(--bg3);border:1px solid var(--bd2);color:var(--c4);font-size:18px;text-align:center;padding:3px;border-radius:2px}
+.pool-max{font-size:11px;color:var(--t0)}
+.pool-bar{height:5px;background:var(--bd1);border-radius:3px;overflow:hidden;margin-top:6px}
+.pool-fill{height:100%;transition:width .3s}
+.pool-btns{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+
+/* CHECK LISTS */
+.chk-row{display:flex;align-items:flex-start;gap:7px;padding:5px 4px;border-bottom:1px solid var(--bd1)}
+.chk-row.locked{opacity:.34}
+.lockbox{margin-left:auto;font-size:9px;color:var(--t0);letter-spacing:1px;display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap}
+.lockbox input{accent-color:var(--c2);width:13px;height:13px}
+.stat-row .step input.big-v{width:52px;font-size:13px;font-weight:700;color:var(--t4)}
+.chk{width:18px;height:18px;flex-shrink:0;border:1px solid var(--bd3);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;border-radius:2px;margin-top:1px}
+.chk.on{background:var(--c1);border-color:var(--c2);color:var(--c4)}
+.chk.dis{cursor:not-allowed}
+.chk-body{flex:1;min-width:0}
+.chk-name{font-size:11px;color:var(--t3)}
+.chk-name .thr{color:var(--a3);font-size:9px}
+.chk-desc{font-size:9px;color:var(--t0);line-height:1.45}
+.chk-cost{font-size:9px;color:var(--a3);flex-shrink:0}
+
+/* TABLE-ish rows */
+.row-in{width:100%;background:none;border:none;border-bottom:1px solid var(--bd1);color:var(--t2);font-size:11px;padding:3px;border-radius:0}
+.row-in:focus{border-bottom-color:var(--c2)}
+.ta{width:100%;background:var(--bg2);border:1px solid var(--bd1);color:var(--t2);font-size:11px;padding:6px;resize:vertical;min-height:70px;line-height:1.5;border-radius:2px}
+.ta:focus{border-color:var(--c2)}
+.sel{background:var(--bg3);border:1px solid var(--bd2);color:var(--t2);font-size:11px;padding:4px 6px;border-radius:2px;-webkit-appearance:none;appearance:none;cursor:pointer;width:100%}
+.sel:focus{border-color:var(--c2)}
+.mini-lbl{font-size:8px;color:var(--t0);letter-spacing:1px;margin-bottom:2px;display:block}
+.fld{margin-bottom:7px}
+
+/* ZANPAKUTO */
+.idcalc{font-size:13px;color:var(--c4);font-weight:700;padding:0 6px;letter-spacing:1px}
+.rel-bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.rel-state{font-size:10px;padding:4px 8px;border:1px solid var(--bd2);color:var(--t0);border-radius:2px}
+.rel-state.on{border-color:var(--c2);color:var(--c4);background:var(--bg4)}
+
+/* MODALS */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:400;padding:10px}
+.ov.open{display:flex;align-items:center;justify-content:center}
+.mod{background:var(--bg3);border:1px solid var(--bd2);border-top:2px solid var(--c2);width:560px;max-width:100%;max-height:90vh;display:flex;flex-direction:column;padding:14px;gap:10px;border-radius:3px}
+.mod-title{font-family:'Shippori Mincho',serif;color:var(--c3);letter-spacing:3px;font-size:13px;font-weight:600}
+.mod-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.mod-btns{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.mod-in{width:100%;background:var(--bg2);border:1px solid var(--bd2);color:var(--t4);font-size:14px;padding:8px;border-radius:2px}
+.mod-in:focus{border-color:var(--c2)}
+.err{font-size:10px;color:var(--r3);min-height:13px}
+.ok-msg{font-size:10px;color:var(--c3)}
+
+/* TOAST / ROLL */
+#toast{position:fixed;left:50%;bottom:calc(14px + var(--safe));transform:translateX(-50%) translateY(20px);background:var(--bg4);border:1px solid var(--bd3);border-left:3px solid var(--c2);padding:10px 14px;z-index:500;opacity:0;pointer-events:none;transition:.25s;max-width:92vw;border-radius:2px}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.krit{border-left-color:var(--c3);box-shadow:0 0 18px var(--c1)}
+#toast.pech{border-left-color:var(--r2);box-shadow:0 0 18px var(--r1)}
+#toast.fail{border-left-color:var(--t0)}
+.toast-r{font-family:'Shippori Mincho',serif;font-size:24px;color:var(--t4);line-height:1;font-weight:800}
+.toast-t{font-size:11px;color:var(--t1);margin-top:3px}
+.toast-v{font-size:9px;color:var(--t0)}
+
+/* MOD BAR */
+
+/* GM */
+#gm-section{display:none;padding:10px;max-width:1140px;margin:0 auto}
+.gm-tabs{display:flex;gap:2px;border-bottom:1px solid var(--bd2);margin-bottom:10px}
+.gm-tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--t0);font-size:11px;letter-spacing:2px;padding:8px 10px;cursor:pointer}
+.gm-tab.active{color:var(--c3);border-bottom-color:var(--c2)}
+.gm-pane{display:none}
+.gm-pane.on{display:block}
+.gm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.gm-card{background:var(--bg2);border:1px solid var(--bd1);border-top:2px solid var(--c1);padding:10px;cursor:pointer;border-radius:2px}
+.gm-card:hover{border-color:var(--c2)}
+.gm-card-name{font-size:13px;color:var(--c3);letter-spacing:1px}
+.gm-card-sub{font-size:9px;color:var(--t0);margin-bottom:7px}
+.gm-stat{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.gm-stat-l{font-size:9px;color:var(--t0);min-width:30px}
+.gm-stat-v{font-size:10px;color:var(--t2);min-width:44px}
+.gm-bar{flex:1;height:4px;background:var(--bd1);border-radius:2px;overflow:hidden}
+.gm-bar-f{height:100%;border-radius:2px}
+.gm-ts{font-size:8px;color:var(--t0);margin-top:5px}
+.tier-chip{display:inline-block;font-size:9px;padding:1px 6px;border:1px solid var(--c1);color:var(--c3);border-radius:9px}
+.gd-sec{font-family:'Shippori Mincho',serif;font-size:11px;color:var(--c2);letter-spacing:2px;margin:9px 0 5px;border-bottom:1px solid var(--bd1);padding-bottom:2px}
+.gd-row{display:flex;gap:8px;font-size:10px;padding:2px 0}
+.gd-l{color:var(--t0);min-width:96px}
+.gd-v{color:var(--t2);flex:1}
+
+/* COMBAT */
+.cmb-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:10px;background:var(--bg3);border:1px solid var(--bd2);padding:8px;border-radius:2px}
+.cmb-round{font-family:'Shippori Mincho',serif;font-size:20px;color:var(--c3);font-weight:800}
+.cmb-round small{font-size:8px;color:var(--t0);letter-spacing:2px;display:block;font-family:'JetBrains Mono',monospace;font-weight:400}
+.fighter{background:var(--bg2);border:1px solid var(--bd1);border-left:3px solid var(--bd3);padding:8px;margin-bottom:6px;border-radius:2px}
+.fighter.act{border-left-color:var(--c2);background:var(--bg4);box-shadow:0 0 0 1px var(--c1)}
+.fighter.pc{border-left-color:var(--c1)}
+.fighter.act.pc{border-left-color:var(--c3)}
+.fighter.down{opacity:.45}
+.f-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.f-name{font-size:13px;color:var(--t3);flex:1;min-width:80px}
+.f-name .who{font-size:8px;color:var(--t0)}
+.f-ref{font-size:9px;color:var(--a3);white-space:nowrap}
+.f-line{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:6px}
+.f-mini{display:flex;align-items:center;gap:3px;background:var(--bg3);border:1px solid var(--bd1);padding:2px 4px;border-radius:2px}
+.f-mini span{font-size:8px;color:var(--t0)}
+.f-mini input{width:34px;background:none;border:none;color:var(--t3);font-size:12px;text-align:center;padding:1px}
+.f-mini button{width:20px;height:20px;background:none;border:1px solid var(--bd2);color:var(--t1);font-size:11px;cursor:pointer;border-radius:2px;line-height:1}
+.f-mini button:hover{border-color:var(--c2);color:var(--c3)}
+.react-box{display:flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--bd2);padding:3px 6px;border-radius:2px}
+.react-dots{display:flex;gap:3px}
+.rd{width:11px;height:11px;border:1px solid var(--bd3);border-radius:50%}
+.rd.on{background:var(--r2);border-color:var(--r3)}
+.react-pen{font-size:11px;color:var(--r3);min-width:30px;text-align:center}
+.react-pen.free{color:var(--c3)}
+.f-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.tag{font-size:9px;padding:2px 6px;border:1px solid var(--bd2);color:var(--t0);cursor:pointer;border-radius:9px;background:none}
+.tag.on{border-color:var(--a2);color:var(--a3);background:var(--a1)}
+.tag.rel-sh.on{border-color:var(--c2);color:var(--c4);background:var(--c1)}
+.tag.rel-bk.on{border-color:var(--c3);color:var(--bg);background:var(--c2)}
+.empty{color:var(--t0);font-size:11px;padding:22px;text-align:center;border:1px dashed var(--bd2);border-radius:2px}
+
+/* char panel rows */
+.char-row{display:flex;align-items:center;gap:8px;padding:8px;background:var(--bg2);border:1px solid var(--bd1);cursor:pointer;border-radius:2px;margin-bottom:4px}
+.char-row:hover{border-color:var(--c1)}
+.char-row.active{border-color:var(--c2);background:var(--bg4)}
+
+@media(max-width:760px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .id-fields{grid-template-columns:1fr}
+  #sheet{padding:9px}
+  .page-wrap{padding:6px}
+  .brand{display:flex;align-items:center;gap:8px;text-align:left}
+  .brand-name{margin-top:0}
+  .brand-sub{display:none}
+  .sh-header{gap:9px}
+  #tab-bar{top:60px}
+  .stat-lbl{font-size:10px}
+}
+</style>
+</head>
+<body>
+
+<div id="auth-bar">
+  <span class="logo">霊圧<small> REIATSU 100</small></span>
+  <div id="auth-login" style="display:flex;gap:8px;align-items:center;flex:1">
+    <button class="btn btn-sm" id="btn-login" onclick="loginGoogle()" style="display:none">Zaloguj przez Google</button>
+    <span id="auth-login-msg">Zaloguj się, żeby karta zapisywała się w chmurze.</span>
+    <span id="setup-note" class="setup-note" style="display:none"></span>
+  </div>
+  <div id="auth-user" style="display:none;align-items:center;gap:8px;flex:1;flex-wrap:wrap">
+    <img id="auth-avatar" class="auth-avatar" alt="">
+    <span class="auth-user" id="auth-name">—</span>
+    <div class="char-select-wrap">
+      <select id="char-select" onchange="onCharSelect(this.value)"><option value="">— wybierz postać —</option></select>
+      <button class="btn btn-sm" onclick="newCharClick()">+ Nowa</button>
+      <button class="btn btn-sm btn-red" id="btn-del-char" style="display:none" onclick="deleteCurrentChar()">Usuń</button>
+    </div>
+    <span id="cloud-status"></span>
+    <button class="btn btn-sm btn-dim" onclick="logoutUser()">Wyloguj</button>
+  </div>
+</div>
+
+<nav id="tab-bar"><div class="inner">
+  <button class="tab-btn active" id="tbtn-karta" onclick="showMainTab('karta')">KARTA</button>
+  <button class="tab-btn" id="tbtn-gm" style="display:none" onclick="showMainTab('gm')">MISTRZ GRY</button>
+</div></nav>
+
+<div class="page-wrap" id="karta-section">
+<div id="sheet">
+  <div class="sh-header">
+    <div class="brand">
+      <div class="brand-kanji">霊圧</div>
+      <div><div class="brand-name">REIATSU</div><div class="brand-sub">GOTEI 13 · KARTA</div></div>
+    </div>
+    <div class="id-fields">
+      <div class="idrow"><label>Imię</label><input id="f-imie" maxlength="32" placeholder="imię i nazwisko"></div>
+      <div class="idrow"><label>Dywizja</label><select id="f-dywizja"></select></div>
+      <div class="idrow"><label>Ranga</label><select id="f-ranga"></select></div>
+      <div class="idrow"><label>Tier baz.</label><select id="f-tier"></select></div>
+      <div class="idrow"><label>PD wolne</label><input id="f-pd" type="number" inputmode="numeric" value="0"></div>
+      <div class="idrow"><label>PD wydane</label><input id="f-pdw" type="number" inputmode="numeric" value="0"></div>
+      <div class="idrow"><label>PD łącznie</label><span class="idcalc" id="pd-total">0</span></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">ATRYBUTY <span class="note">start 8 · rozdziel 18 · maks. 15 · nie rosną nigdy</span><span class="badge b-ok" id="bd-attr">0/18</span></div>
+    <div class="grid3" id="attr-box"></div>
+    <div class="hint">Gdy nie pasuje żadna umiejętność — testuj atrybut × 5.</div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">WARTOŚCI POCHODNE <span class="note">liczone z atrybutów i tieru</span></div>
+    <div class="der-grid" id="der-box"></div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">STAN <span class="note">PŻ · PR · Wyczerpanie · limitery</span></div>
+    <div class="grid2">
+      <div>
+        <div class="pool">
+          <div class="pool-top">
+            <span class="pool-name">PŻ</span>
+            <input class="pool-in" id="f-pz" type="number" inputmode="numeric" value="0">
+            <span class="pool-max">/ <b id="pz-max">0</b></span>
+            <div class="pool-btns">
+              <button class="btn btn-sm btn-red" onclick="bumpPZ(-1)">−1</button>
+              <button class="btn btn-sm" onclick="bumpPZ(1)">+1</button>
+            </div>
+          </div>
+          <div class="pool-bar"><div class="pool-fill" id="pz-bar"></div></div>
+          <div class="hint" id="pz-note"></div>
+        </div>
+        <div class="pool">
+          <div class="pool-top">
+            <span class="pool-name">PR</span>
+            <input class="pool-in" id="f-pr" type="number" inputmode="numeric" value="0">
+            <span class="pool-max">/ <b id="pr-max">0</b></span>
+            <div class="pool-btns">
+              <button class="btn btn-sm btn-red" onclick="bumpPR(-1)">−1</button>
+              <button class="btn btn-sm" onclick="bumpPR(1)">+1</button>
+            </div>
+          </div>
+          <div class="pool-bar"><div class="pool-fill" id="pr-bar"></div></div>
+          <div class="hint">Koszty do odliczenia ręcznie: shunpo 1 · Shikai 3 + 2/rundę · Bankai 8 + 5/rundę · kaidō 2 · palenie duszy 2 PŻ = 1 PR.</div>
+        </div>
+      </div>
+      <div>
+        <div class="pool">
+          <div class="pool-top">
+            <span class="pool-name">WYCZ.</span>
+            <input class="pool-in" id="f-wycz" type="number" inputmode="numeric" value="0">
+            <span class="pool-max" id="wycz-note">poziomów · −20 każdy</span>
+            <div class="pool-btns">
+              <button class="btn btn-sm btn-dim" onclick="bumpWycz(-1)">−1</button>
+              <button class="btn btn-sm btn-red" onclick="bumpWycz(1)">+1</button>
+            </div>
+          </div>
+        </div>
+        <div class="pool">
+          <div class="fld"><label class="mini-lbl">GENTEI KAIJO — pieczęć w Świecie Żywych</label>
+            <select class="sel" id="f-gentei"><option value="0">brak pieczęci</option><option value="1">−1 tier (oficer)</option><option value="2">−2 tiery (porucznik / kapitan)</option></select>
+          </div>
+          <div class="fld"><label class="mini-lbl">MASKA VIZARDA (+1 tier, 3 PR/rundę)</label>
+            <select class="sel" id="f-maska"><option value="0">brak / zdjęta</option><option value="1">założona</option></select>
+          </div>
+          <div class="fld"><label class="mini-lbl">DR — tylko z zanpakutō / cechy</label>
+            <input class="row-in" id="f-dr-manual" type="number" inputmode="numeric" value="0" placeholder="0">
+            <div class="hint" id="dr-hint">Domyślnie 0. Typ Ziemia/Metal +2 w uwolnieniu i forma Tarcza i ostrze +1 doliczają się same — także wtedy, gdy wybierzesz je jako bonus własnego typu lub formy.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">CZTERY SZTUKI <span class="note">baza +10 · rozdziel 20 · maks. 50 na starcie</span><span class="badge b-ok" id="bd-arts">0/20</span>
+      <label class="lockbox"><input type="checkbox" id="f-gotowa"> postać gotowa</label></div>
+    <div id="arts-box"></div>
+    <div class="hint" id="hint-arts"></div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">UMIEJĘTNOŚCI OGÓLNE <span class="note">rozdziel 100 · maks. +25 w jedną</span><span class="badge b-ok" id="bd-skills">0/100</span></div>
+    <div class="grid2"><div id="skills-box-a"></div><div id="skills-box-b"></div></div>
+    <div class="hint" id="hint-skills"></div>
+    <div style="margin-top:8px"><div class="mini-lbl">WŁASNE UMIEJĘTNOŚCI (nazwa · wartość)</div><div id="custom-skills"></div></div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">TECHNIKI <span class="note">pasywne · działają zawsze · przygaszone = próg jeszcze nieosiągnięty</span></div>
+    <div class="grid2" id="tech-box"></div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">KIDŌ <span class="note">numer zaklęcia = wymagana wartość Kidō</span><span class="badge b-ok" id="bd-kido">Kidō 0</span></div>
+    <div class="grid2">
+      <div><div class="mini-lbl" style="color:var(--r3)">HADŌ — sztuki zniszczenia</div><div id="hado-box"></div></div>
+      <div><div class="mini-lbl" style="color:var(--c3)">BAKUDŌ — sztuki wiązania</div><div id="bakudo-box"></div></div>
+    </div>
+    <div style="margin-top:8px"><div class="mini-lbl">ZAKLĘCIA AUTORSKIE (Kidō 80+) — nr efektywny · nazwa</div><div id="custom-spells"></div></div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">ZANPAKUTŌ <span class="note" id="zan-hint">asauchi 1d8 · Shikai 1d10 · Bankai 2d8</span></div>
+    <div class="rel-bar">
+      <label class="mini-lbl" style="margin:0">STAN UWOLNIENIA</label>
+      <select class="sel" id="f-rel" style="width:auto">
+        <option value="seal">zapieczętowane · 1d8</option>
+        <option value="shikai">Shikai · +1 tier · 1d10</option>
+        <option value="bankai">Bankai · +2 tiery · 2d8</option>
+      </select>
+      <span class="rel-state" id="rel-state">zapieczętowane</span>
+    </div>
+    <div class="grid2">
+      <div>
+        <div class="fld"><label class="mini-lbl">IMIĘ MIECZA</label><input class="row-in" id="f-zan-imie" placeholder="pada w scenie jinzen"></div>
+        <div class="fld"><label class="mini-lbl">KOMENDA UWOLNIENIA</label><input class="row-in" id="f-zan-kom" placeholder="np. „Tnij, ..."></div>
+        <div class="fld"><label class="mini-lbl">TYP</label><select class="sel" id="f-zan-typ" onchange="applyTypeForm('typ')"></select>
+          <div id="typ-custom" style="display:none;margin-top:4px">
+            <input class="row-in" id="f-zan-typ-x" placeholder="nazwa własnego typu (np. Popiół)">
+            <label class="mini-lbl" style="margin-top:4px">BONUS TYPU — działa jak</label>
+            <select class="sel" id="f-zan-typ-b" onchange="applyTypeForm('typ')"></select>
+          </div>
+        </div>
+        <div class="fld"><label class="mini-lbl">FORMA</label><select class="sel" id="f-zan-forma" onchange="applyTypeForm('forma')"></select>
+          <div id="forma-custom" style="display:none;margin-top:4px">
+            <input class="row-in" id="f-zan-forma-x" placeholder="nazwa własnej formy (np. Wachlarz)">
+            <label class="mini-lbl" style="margin-top:4px">BONUS FORMY — działa jak</label>
+            <select class="sel" id="f-zan-forma-b" onchange="applyTypeForm('forma')"></select>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="fld"><label class="mini-lbl">PASYWKA SHIKAI</label><textarea class="ta" id="f-zan-pas" style="min-height:52px"></textarea></div>
+        <div class="fld"><label class="mini-lbl">AKTYWKA SHIKAI (koszt PR)</label><textarea class="ta" id="f-zan-akt" style="min-height:52px"></textarea></div>
+        <div class="fld"><label class="mini-lbl">BANKAI</label><textarea class="ta" id="f-zan-bankai" style="min-height:52px"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="stitle">RANY, BLIZNY, NOTATKI</div>
+    <div class="grid2">
+      <div>
+        <div class="fld"><label class="mini-lbl">TRWAŁE RANY <select class="row-in" id="wound-pick" style="width:auto;font-size:9px;padding:2px 4px"><option value="">dopisz ranę z k10…</option></select></label><textarea class="ta" id="f-rany" placeholder="Kaidō ich nie rusza."></textarea></div>
+      </div>
+      <div>
+        <div class="fld"><label class="mini-lbl">NOTATKI · DUCH MIECZA · WĄTKI</label><textarea class="ta" id="f-notatki"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec" style="display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--bd1);padding-top:10px">
+    <button class="btn btn-sm btn-dim" onclick="openExport()">Eksport kodu</button>
+    <button class="btn btn-sm btn-dim" onclick="openImport()">Import kodu</button>
+    <button class="btn btn-sm btn-red" onclick="confirmReset()">Wyczyść kartę</button>
+    <span id="save-msg" style="font-size:10px;color:var(--a3);align-self:center"></span>
+  </div>
+</div>
+</div>
+
+<section id="gm-section">
+  <div class="gm-tabs">
+    <button class="gm-tab active" onclick="showGmTab('roster')">DRUŻYNA <span id="gm-count"></span></button>
+    <button class="gm-tab" onclick="showGmTab('walka')">KOLEJKA WALKI</button>
+  </div>
+
+  <div class="gm-pane on" id="gmp-roster">
+    <div style="display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-sm" onclick="gmLoadRoster()">Odśwież</button>
+      <button class="btn btn-sm btn-dim" onclick="gmAddAllToCombat()">Dodaj wszystkich do kolejki</button>
+      <span style="font-size:9px;color:var(--t0)">Podgląd żywy: dane spływają z kart graczy przy każdym zapisie.</span>
+    </div>
+    <div class="gm-grid" id="gm-roster-grid"></div>
+    <div class="empty" id="gm-empty" style="display:none">Brak kart w chmurze. Gracz musi zapisać postać z imieniem.</div>
+  </div>
+
+  <div class="gm-pane" id="gmp-walka">
+    <div class="cmb-top">
+      <div class="cmb-round"><span id="cmb-round">1</span><small>RUNDA</small></div>
+      <div style="flex:1;min-width:120px;font-size:10px;color:var(--t0)" id="cmb-turn-note">Kolejność: malejący Refleks. Remis → wyższe Hohō → gracze przed BN-ami.</div>
+      <button class="btn btn-sm" onclick="cmbNextTurn()">Następna tura ▸</button>
+      <button class="btn btn-sm btn-amber" onclick="cmbNextRound()">Nowa runda</button>
+      <button class="btn btn-sm btn-dim" onclick="cmbAddNpc()">+ BN</button>
+      <button class="btn btn-sm btn-dim" onclick="cmbOpenPick()">+ Gracz</button>
+      <button class="btn btn-sm btn-red" onclick="cmbReset()">Wyczyść</button>
+    </div>
+    <div id="cmb-list"></div>
+    <div class="empty" id="cmb-empty">Kolejka pusta. Dodaj graczy z drużyny albo BN-a.</div>
+    <div class="hint" style="margin-top:8px">Reakcje: pierwsza w rundzie pełna, każda kolejna −20 (lub −10 przy Żelaznej gardzie / Zwinności — przełącznik „krok −10"). Licznik zeruje się na początku tury postaci. Shunpo nie podbija licznika. Zaskoczeni nie mają reakcji w 1. rundzie.</div>
+  </div>
+</section>
+
+<!-- MODALS -->
+<div class="ov" id="nick-modal">
+  <div class="mod" style="width:400px">
+    <div class="mod-title">TWÓJ NICK</div>
+    <div style="font-size:11px;color:var(--t1)">Widzi go Mistrz Gry przy Twoich postaciach. Ustawiasz raz.</div>
+    <input class="mod-in" id="nick-input" maxlength="24" placeholder="2–24 znaki">
+    <div class="err" id="nick-error"></div>
+    <div class="mod-btns"><button class="btn" onclick="saveNick()">Zapisz nick</button></div>
+  </div>
+</div>
+
+<div class="ov" id="modal">
+  <div class="mod">
+    <div class="mod-title" id="modal-title">KOD</div>
+    <textarea class="ta" id="modal-ta" style="min-height:210px;font-size:10px"></textarea>
+    <div class="err" id="modal-status" style="color:var(--t1)"></div>
+    <div class="mod-btns">
+      <button class="btn btn-sm btn-dim" id="modal-copy" onclick="copyModal()">Kopiuj</button>
+      <button class="btn btn-sm" id="modal-import" onclick="doImport()">Wczytaj</button>
+      <button class="btn btn-sm btn-dim" onclick="closeModal()">Zamknij</button>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="gm-detail" onclick="if(event.target===this)closeGmDetail()">
+  <div class="mod" style="width:640px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="mod-title" style="flex:1" id="gd-title">—</div>
+      <button class="btn btn-sm btn-dim" onclick="closeGmDetail()">Zamknij</button>
+    </div>
+    <div class="mod-body" id="gd-body"></div>
+    <div class="mod-btns">
+      <button class="btn btn-sm" onclick="gmAddDetailToCombat()">Dodaj do kolejki walki</button>
+      <button class="btn btn-sm btn-red" onclick="gmPurgeEntry()">Usuń wpis z drużyny</button>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="cmb-pick" onclick="if(event.target===this)document.getElementById('cmb-pick').classList.remove('open')">
+  <div class="mod" style="width:420px">
+    <div class="mod-title">DODAJ GRACZA DO KOLEJKI</div>
+    <div class="mod-body" id="cmb-pick-list"></div>
+    <div class="mod-btns"><button class="btn btn-sm btn-dim" onclick="document.getElementById('cmb-pick').classList.remove('open')">Zamknij</button></div>
+  </div>
+</div>
+
+<div id="toast"><div class="toast-r" id="toast-r">—</div><div class="toast-t" id="toast-t"></div><div class="toast-v" id="toast-v"></div></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   FIREBASE — wklej config swojego projektu.
+   Zostaw "BRAK" w apiKey, żeby działać offline (localStorage).
+   ═══════════════════════════════════════════════════════ */
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyA0wfu0QxAYdutoablZW0MX5gsm1qnCI2k",
+  authDomain: "reiatsu-100.firebaseapp.com",
+  projectId: "reiatsu-100",
+  storageBucket: "reiatsu-100.firebasestorage.app",
+  messagingSenderId: "491721664190",
+  appId: "1:491721664190:web:4ce496bb336a39f3dc60ef"
+};
+/* UID właściciela (pierwszy MG/admin). Zobaczysz go w Firebase → Authentication → Users. */
+var ADMIN_UID = 'WKLEJ_SWOJE_UID';
+var MAX_CHARS = 5;              /* limit postaci na konto — anty-duchy */
+var SAVE_KEY  = 'reiatsu100-v1';
+
+/* ─── stałe systemu ─────────────────────────────────── */
+var DIVISIONS = ['1 — dowodzenie, tradycja, elita','2 — tajne operacje, Onmitsukidō','3 — melancholia i pragmatyzm','4 — medyczna i zaopatrzeniowa','5 — wszechstronna','6 — prawo, arystokracja','7 — honor i prostolinijność','8 — luz na wierzchu','9 — bezpieczeństwo, gazeta','10 — młode talenty','11 — miecz ponad wszystko','12 — badania i rozwój','13 — patrole Świata Żywych'];
+var RANKS = ['Szeregowy','Oficer niższy (20–11)','Oficer wyższy (10–4)','3. miejsce','Porucznik','Kapitan'];
+var TIER_NOTE = ['0 — absolwent Akademii','1 — doświadczony shinigami','2 — wyższy oficer / Gillian','3 — porucznik / Adjuchas','4 — kapitan','5 — elita / Vasto Lorde','6 — byt transcendentny'];
+
+var ATTRS = [
+  {id:'sil',n:'Siła',ab:'SIŁ',d:'obrażenia, krzepa'},
+  {id:'ref',n:'Refleks',ab:'REF',d:'kolejność w walce'},
+  {id:'krz',n:'Krzepa',ab:'KRZ',d:'PŻ, rundy umierania'},
+  {id:'int',n:'Intelekt',ab:'INT',d:'wiedza, teoria kidō'},
+  {id:'wol',n:'Wola',ab:'WOL',d:'PR, opór na presję'},
+  {id:'dsz',n:'Dusza',ab:'DSZ',d:'PŻ i PR, głębia mocy'}
+];
+var ARTS = [
+  {id:'zanjutsu',n:'Zanjutsu',b:['sil','ref'],bt:'SIŁ+REF',d:'miecz: atak i parada'},
+  {id:'hakuda',  n:'Hakuda',  b:['sil','krz'],bt:'SIŁ+KRZ',d:'pięści, chwyty, rzuty'},
+  {id:'hoho',    n:'Hohō',    b:['ref','ref'],bt:'REF×2',  d:'shunpo, uniki, ruch'},
+  {id:'kido',    n:'Kidō',    b:['int','dsz'],bt:'INT+DSZ',d:'Hadō/Bakudō, kaidō'}
+];
+var SKILLS = [
+  {id:'percepcja',n:'Percepcja',b:['ref','int'],bt:'REF+INT'},
+  {id:'wyczucie', n:'Wyczucie Reiatsu',b:['dsz','int'],bt:'DSZ+INT'},
+  {id:'kontrola', n:'Kontrola Reiatsu',b:['dsz','wol'],bt:'DSZ+WOL'},
+  {id:'atletyka', n:'Atletyka',b:['sil','krz'],bt:'SIŁ+KRZ'},
+  {id:'skradanie',n:'Skradanie',b:['ref','int'],bt:'REF+INT'},
+  {id:'wiedza',   n:'Wiedza',b:['int','int'],bt:'INT×2'},
+  {id:'medycyna', n:'Medycyna',b:['int','dsz'],bt:'INT+DSZ'},
+  {id:'perswazja',n:'Perswazja',b:['int','wol'],bt:'INT+WOL'},
+  {id:'zastrasz', n:'Zastraszanie',b:['dsz','wol'],bt:'DSZ+WOL'},
+  {id:'dowodzenie',n:'Dowodzenie',b:['wol','int'],bt:'WOL+INT'}
+];
+var TECHS = [
+  {id:'zan40', a:'zanjutsu',t:40, c:3,n:'Iaijutsu',d:'atak z dobycia: +20 do trafienia i +2 obrażeń'},
+  {id:'zan60', a:'zanjutsu',t:60, c:3,n:'Żelazna garda',d:'kara za kolejne parady to −10 zamiast −20'},
+  {id:'zan80', a:'zanjutsu',t:80, c:4,n:'Przewaga ostrza',d:'remisy w sporze atakiem mieczem wygrywasz ty'},
+  {id:'zan100',a:'zanjutsu',t:100,c:4,n:'Tańczące ostrze',d:'akcja ataku mieczem to dwa cięcia (drugie −20)'},
+  {id:'zan120',a:'zanjutsu',t:120,c:5,n:'Cięcie absolutne',d:'próg krytyka mieczem = wartość ÷ 5'},
+  {id:'hak40', a:'hakuda',t:40, c:3,n:'Żelazne pięści',d:'wręcz 1d8; parujesz broń gołymi rękami, brak Rozbrojenia'},
+  {id:'hak60', a:'hakuda',t:60, c:3,n:'Rzut przez biodro',d:'krytyk wręcz dodaje darmowe Powalenie'},
+  {id:'hak80', a:'hakuda',t:80, c:4,n:'Miażdżący uścisk',d:'ataki wręcz ignorują 2 punkty DR'},
+  {id:'hak100',a:'hakuda',t:100,c:4,n:'Shunkō',d:'wymaga Kidō 60 · Hakuda +10, wręcz 2d6',req:{kido:60}},
+  {id:'hak120',a:'hakuda',t:120,c:5,n:'Sōkotsu',d:'krytyki wręcz podwajają obrażenia'},
+  {id:'hoh40', a:'hoho',t:40, c:3,n:'Lekki krok',d:'skok shunpo sięga 2 stref'},
+  {id:'hoh60', a:'hoho',t:60, c:3,n:'Zwinność',d:'kara za kolejne uniki to −10 zamiast −20'},
+  {id:'hoh80', a:'hoho',t:80, c:4,n:'Zanzō',d:'pierwszy atak w ciebie w każdej walce chybia automatycznie'},
+  {id:'hoh100',a:'hoho',t:100,c:4,n:'Senka',d:'atak w tej samej rundzie co shunpo: cel broni się z −20'},
+  {id:'hoh120',a:'hoho',t:120,c:5,n:'Krok nietykalny',d:'uniki nie podlegają karom kumulatywnym'},
+  {id:'kid40', a:'kido',t:40, c:3,n:'Stabilna inkantacja',d:'pełna inkantacja w ruchu i pod ostrzałem'},
+  {id:'kid60', a:'kido',t:60, c:3,n:'Eishōhaku doskonalone',d:'pominięcie inkantacji to −10 zamiast −20'},
+  {id:'kid80', a:'kido',t:80, c:4,n:'Oszczędna dłoń',d:'wszystkie zaklęcia kosztują 1 PR mniej (min 1)'},
+  {id:'kid100',a:'kido',t:100,c:4,n:'Mistrzostwo bezgłośne',d:'pomijasz inkantację bez kary'},
+  {id:'kid120',a:'kido',t:120,c:5,n:'Arcymistrz',d:'krytyk zaklęcia podwaja efekt; pech już cię nie rani'}
+];
+var HADO = [
+  [1,'Shō',1,'pchnięcie: cel odrzucony o strefę'],
+  [4,'Byakurai',1,'1d6, promień przebija DR'],
+  [11,'Tsuzuri Raiden',2,'1d6/rundę przez przewodzący obiekt'],
+  [31,'Shakkahō',4,'3d6, kula czerwonego ognia'],
+  [33,'Sōkatsui',4,'3d6, fala: do 2 celów w strefie'],
+  [54,'Haien',6,'5d6, podpala (1d4/rundę)'],
+  [58,'Tenran',6,'5d6, stożek, odrzut o strefę'],
+  [63,'Raikōhō',7,'6d6, grom'],
+  [73,'Sōren Sōkatsui',8,'7d6 w jeden cel albo 4d6 w dwa'],
+  [88,'Hiryū Gekizoku Shinten Raihō',9,'8d6, zasięg Horyzont'],
+  [90,'Kurohitsugi',9,'9d6 + uwięzienie na rundę (wyrwanie −45)'],
+  [96,'Ittō Kasō',10,'9d6 wokół ciebie; dodatkowo 10 PŻ']
+];
+var BAKUDO = [
+  [1,'Sai',1,'ręce skute za plecami (wyrwanie bez kary)'],
+  [4,'Hainawa',1,'świetlna lina (−2)'],
+  [8,'Seki',1,'reakcja: neguje jeden atak wręcz'],
+  [9,'Geki',1,'paraliż na rundę przy nieudanym teście Woli×5'],
+  [21,'Sekienton',3,'dym: zrywasz kontakt, ataki za tobą −20'],
+  [26,'Kyokkō',3,'niewidzialność do ataku lub ruchu'],
+  [30,'Shitotsu Sansen',3,'przygwożdżenie (−15)'],
+  [37,'Tsuriboshi',4,'sieć: łapie spadających'],
+  [39,'Enkōsen',4,'reakcja: blokuje atak (do 15 obrażeń)'],
+  [58,'Kakushitsuijaku',6,'namierzanie znanej sygnatury'],
+  [61,'Rikujōkōrō',7,'pełne unieruchomienie (−30)'],
+  [62,'Hyapporankan',7,'do 3 celów w strefie (−20 każdy)'],
+  [63,'Sajō Sabaku',7,'złoty łańcuch (−30)'],
+  [73,'Tozanshō',8,'bariera wokół strefy (30 obrażeń)'],
+  [77,'Tenteikūra',8,'transmisja do znanych sygnatur'],
+  [81,'Dankū',9,'reakcja: neguje jedno Hadō ≤ 89'],
+  [99,'Kin',10,'pieczęć (−50); rytuał']
+];
+var ZTYPES = [
+  ['—','',''],
+  ['1 Ogień','ataki +1d6 ognia','3 PR: fala płomieni — 3d6 wszystkim w strefie'],
+  ['2 Lód / Woda','trafienia: cel −10 Hohō (kumul. do −30)','3 PR: uwięzienie w lodzie — sporny Kidō vs Atletyka'],
+  ['3 Błyskawica','raz na rundę shunpo za 0 PR','2 PR: porażenie — cel traci reakcje do swojej tury'],
+  ['4 Wiatr','cięcia sięgają strefy Blisko','3 PR: cyklon — wszyscy w Starciu odrzuceni o strefę'],
+  ['5 Ziemia / Metal','+2 DR podczas uwolnienia','2 PR: ściana — osłona 30 obrażeń'],
+  ['6 Kinetyczny','obrażenia +2','3 PR: fala uderzeniowa — 3d6 + powalenie'],
+  ['7 Wiążący','raz na walkę trafienie pęta cel jak Bakudō #30 (−15)','2 PR: łańcuchy — unieruchomienie na sporny Kidō'],
+  ['8 Iluzja','raz na rundę atakujący ciebie testuje z −20','2 PR: fałszywy obraz — następny atak trafia w miraż'],
+  ['9 Dźwięk','+10 przeciwko obronom','3 PR: ryk — stożek: cele tracą reakcje, przerywają inkantacje'],
+  ['10 Roślinny / Jad','trafienia zatruwają: 1 PŻ/rundę (do 3)','3 PR: pnącza — test Atletyki albo spętanie (−15)']
+];
+var ZFORMS = [
+  ['—',''],
+  ['1 Kosa','krytyk dodaje darmowe Powalenie'],
+  ['2 Bicz','atakujesz cele w strefie Blisko bez kar'],
+  ['3 Podwójne ostrza','druga parada w rundzie bez kary kumulatywnej'],
+  ['4 Tasak / Wielki miecz','+2 obrażeń; parowanie −10'],
+  ['5 Łuk / Pociski','atakujesz Zanjutsu do strefy Daleko'],
+  ['6 Pazury / Rękawice','ataki liczysz z wyższej: Zanjutsu albo Hakuda'],
+  ['7 Włócznia','wróg wchodzący w Starcie zjada darmowy atak'],
+  ['8 Tarcza i ostrze','+1 DR i +10 do parad'],
+  ['9 Rój fragmentów','jedną akcją atakujesz 2 cele w strefie (drugi −20)'],
+  ['10 Bez zmiany kształtu','+10 do Zanjutsu w uwolnieniu']
+];
+var WOUNDS = ['Sieć blizn — brak kar, historia na twarzy','Uszkodzone oko — −20 Percepcja wzrokowa i ataki na Daleko','Strzaskana dłoń — −10 do precyzji tej ręki','Kulawa noga — −10 Hohō i Atletyka','Źle zrośnięte żebra — max PŻ −2','Przebite płuco — −10 Atletyka; po 5+ rundach −10 do wszystkiego','Uszkodzony nerw — −10 Hohō i Percepcja','Drżenie rąk — −10 Kidō','Chroniczny ból — −10 Wola i Zastraszanie','Nadszarpnięty rdzeń duchowy — max PR −5'];
+
+var TXT_FIELDS = ['f-imie','f-dywizja','f-ranga','f-tier','f-rel','f-pd','f-pdw','f-pz','f-pr','f-wycz','f-gentei','f-maska','f-dr-manual','f-zan-imie','f-zan-kom','f-zan-typ','f-zan-typ-x','f-zan-typ-b','f-zan-forma','f-zan-forma-x','f-zan-forma-b','f-zan-pas','f-zan-akt','f-zan-bankai','f-rany','f-notatki'];
+
+/* ─── stan ──────────────────────────────────────────── */
+var S = { attrs:{}, arts:{}, skills:{}, techs:{}, spells:{}, rel:'seal' };
+var dirtyTimer = null, suppressSave = false;
+
+function el(id){ return document.getElementById(id); }
+function num(v,d){ var n=parseInt(v,10); return isNaN(n)?(d||0):n; }
+function escHtml(s){ var d=document.createElement('div'); d.textContent=String(s==null?'':s); return d.innerHTML; }
+
+/* ─── wartości ──────────────────────────────────────── */
+function attr(id){ return num(S.attrs[id],8); }
+function artBase(a){ return attr(a.b[0]) + attr(a.b[1]); }
+function artVal(id){ var a=ARTS.find(function(x){return x.id===id;}); var s=S.arts[id]||{a:0,g:0};
+  return artBase(a)+10+num(s.a)+num(s.g); }
+function skillBase(s){ return attr(s.b[0]) + attr(s.b[1]); }
+function skillVal(id){ var s=SKILLS.find(function(x){return x.id===id;}); var v=S.skills[id]||{a:0,g:0};
+  return skillBase(s)+num(v.a)+num(v.g); }
+function crit(v,id){
+  if(id==='zanjutsu' && S.techs['zan120']) return Math.max(1,Math.ceil(v/5));
+  return Math.max(1,Math.ceil(v/10));
+}
+function tierBase(){ return num(el('f-tier').value,0); }
+function relState(){ var e=el('f-rel'); return e?e.value:'seal'; }
+function relBonus(){ return relState()==='bankai'?2:(relState()==='shikai'?1:0); }
+function tierEff(){
+  var t = tierBase() + relBonus() + num(el('f-maska').value,0) - num(el('f-gentei').value,0);
+  return Math.max(0,t);
+}
+function pzMax(){ return attr('krz')+attr('dsz'); }
+function prMax(){ return attr('dsz')+attr('wol')+10*tierBase(); }
+function zTyp(){ var v=el('f-zan-typ').value; return v==='custom'?el('f-zan-typ-b').value:v; }
+function zForma(){ var v=el('f-zan-forma').value; return v==='custom'?el('f-zan-forma-b').value:v; }
+function drTotal(){
+  var dr = num(el('f-dr-manual').value,0);
+  if(relState()!=='seal'){
+    if((zTyp()||'').indexOf('Ziemia')>=0) dr+=2;
+    if((zForma()||'').indexOf('Tarcza')>=0) dr+=1;
+  }
+  return dr;
+}
+
+/* ─── budowanie UI ──────────────────────────────────── */
+function buildSelects(){
+  var dv=el('f-dywizja'); dv.innerHTML='';
+  DIVISIONS.forEach(function(x,i){ var o=document.createElement('option'); o.value=String(i+1); o.textContent=x; dv.appendChild(o); });
+  var rn=el('f-ranga'); rn.innerHTML='';
+  RANKS.forEach(function(x){ var o=document.createElement('option'); o.value=x; o.textContent=x; rn.appendChild(o); });
+  var tr=el('f-tier'); tr.innerHTML='';
+  TIER_NOTE.forEach(function(x,i){ var o=document.createElement('option'); o.value=String(i); o.textContent=x; tr.appendChild(o); });
+  function fill(sel, list, extra){
+    sel.innerHTML='';
+    list.forEach(function(x){ var o=document.createElement('option'); o.value=x[0]; o.textContent=x[0]; sel.appendChild(o); });
+    if(extra){ var o=document.createElement('option'); o.value='custom'; o.textContent=extra; sel.appendChild(o); }
+  }
+  fill(el('f-zan-typ'),   ZTYPES, '— własny typ —');
+  fill(el('f-zan-forma'), ZFORMS, '— własna forma —');
+  fill(el('f-zan-typ-b'),   ZTYPES.map(function(x){ return [x[0]==='—'?'bez bonusu mechanicznego':x[0]]; }), null);
+  fill(el('f-zan-forma-b'), ZFORMS.map(function(x){ return [x[0]==='—'?'bez bonusu mechanicznego':x[0]]; }), null);
+}
+
+function buildAttrs(){
+  var box=el('attr-box'); box.innerHTML='';
+  ATTRS.forEach(function(a){
+    var r=document.createElement('div'); r.className='stat-row';
+    r.innerHTML='<span class="stat-lbl">'+a.n+' <b>'+a.ab+'</b><br><span class="stat-base">'+a.d+'</span></span>'+
+      '<span class="step"><button type="button" data-act="dec">−</button><input type="number" inputmode="numeric" id="at-'+a.id+'"><button type="button" data-act="inc">+</button></span>';
+    box.appendChild(r);
+    var inp=r.querySelector('input');
+    r.querySelector('[data-act=dec]').onclick=function(){ setAttr(a.id,attr(a.id)-1); };
+    r.querySelector('[data-act=inc]').onclick=function(){ setAttr(a.id,attr(a.id)+1); };
+    inp.oninput=function(){ S.attrs[a.id]=num(inp.value,8); refresh(); };
+  });
+}
+function locked(){ return !!(el('f-gotowa') && el('f-gotowa').checked); }
+function setArtVal(id,v){
+  var a=ARTS.find(function(x){return x.id===id;}), st=S.arts[id], floor=artBase(a)+10;
+  v=Math.max(floor, num(v,floor));
+  if(locked()) st.g = Math.max(0, v-floor-num(st.a));
+  else         st.a = Math.max(0, v-floor-num(st.g));
+  refresh();
+}
+function setSkillVal(id,v){
+  var s=SKILLS.find(function(x){return x.id===id;}), st=S.skills[id], floor=skillBase(s);
+  v=Math.max(floor, num(v,floor));
+  if(locked()) st.g = Math.max(0, v-floor-num(st.a));
+  else         st.a = Math.max(0, v-floor-num(st.g));
+  refresh();
+}
+function setAttr(id,v){ S.attrs[id]=Math.max(5,Math.min(20,v)); refresh(); }
+
+function buildArts(){
+  var box=el('arts-box'); box.innerHTML='';
+  ARTS.forEach(function(a){
+    var r=document.createElement('div'); r.className='stat-row';
+    r.innerHTML='<span class="stat-lbl">'+a.n+'<br><span class="stat-base" id="ab-'+a.id+'"></span></span>'+
+      '<span class="step"><button type="button" data-act="dec">−</button><input type="number" inputmode="numeric" class="big-v" id="aa-'+a.id+'"><button type="button" data-act="inc">+</button></span>'+
+      '<span class="krit" id="ak-'+a.id+'">kr.1</span>';
+    box.appendChild(r);
+    var ia=r.querySelector('#aa-'+a.id);
+    r.querySelector('[data-act=dec]').onclick=function(){ setArtVal(a.id, artVal(a.id)-1); };
+    r.querySelector('[data-act=inc]').onclick=function(){ setArtVal(a.id, artVal(a.id)+1); };
+    ia.oninput=function(){ setArtVal(a.id, num(ia.value)); };
+  });
+}
+
+function buildSkills(){
+  var A=el('skills-box-a'), B=el('skills-box-b'); A.innerHTML=''; B.innerHTML='';
+  SKILLS.forEach(function(s,i){
+    var r=document.createElement('div'); r.className='stat-row';
+    r.innerHTML='<span class="stat-lbl">'+s.n+'<br><span class="stat-base" id="sb-'+s.id+'"></span></span>'+
+      '<span class="step"><button type="button" data-act="dec">−</button><input type="number" inputmode="numeric" class="big-v" id="sa-'+s.id+'"><button type="button" data-act="inc">+</button></span>'+
+      '<span class="krit" id="sk-'+s.id+'">kr.1</span>';
+    (i<5?A:B).appendChild(r);
+    var ia=r.querySelector('#sa-'+s.id);
+    r.querySelector('[data-act=dec]').onclick=function(){ setSkillVal(s.id, skillVal(s.id)-1); };
+    r.querySelector('[data-act=inc]').onclick=function(){ setSkillVal(s.id, skillVal(s.id)+1); };
+    ia.oninput=function(){ setSkillVal(s.id, num(ia.value)); };
+  });
+  var cs=el('custom-skills'); cs.innerHTML='';
+  for(var k=0;k<4;k++){
+    var row=document.createElement('div'); row.className='stat-row';
+    row.innerHTML='<input class="row-in" id="cs'+k+'n" placeholder="nazwa umiejętności">'+
+      '<span class="step"><input type="number" inputmode="numeric" id="cs'+k+'v" placeholder="0"></span>'+
+      '<span class="krit" id="csk'+k+'">kr.1</span>';
+    cs.appendChild(row);
+    row.querySelector('input').oninput=markDirty;
+    row.querySelectorAll('input')[1].oninput=function(){ refreshCustomCrit(); markDirty(); };
+  }
+}
+
+function buildTechs(){
+  var box=el('tech-box'); box.innerHTML='';
+  ARTS.forEach(function(a){
+    var col=document.createElement('div');
+    col.innerHTML='<div class="mini-lbl" style="color:var(--c3)">'+a.n.toUpperCase()+'</div>';
+    TECHS.filter(function(t){return t.a===a.id;}).forEach(function(t){
+      var r=document.createElement('div'); r.className='chk-row'; r.id='tr-'+t.id;
+      r.innerHTML='<div class="chk" id="tc-'+t.id+'">✓</div><div class="chk-body">'+
+        '<div class="chk-name">'+t.n+' <span class="thr">próg '+t.t+'</span></div>'+
+        '<div class="chk-desc">'+t.d+'</div></div><div class="chk-cost">'+t.c+' PD</div>';
+      col.appendChild(r);
+      r.querySelector('.chk').onclick=function(){ toggleTech(t); };
+    });
+    box.appendChild(col);
+  });
+}
+function buildSpells(){
+  [['hado-box',HADO],['bakudo-box',BAKUDO]].forEach(function(pair){
+    var box=el(pair[0]); box.innerHTML='';
+    pair[1].forEach(function(sp){
+      var key=(pair[0]==='hado-box'?'H':'B')+sp[0];
+      var r=document.createElement('div'); r.className='chk-row'; r.id='sr-'+key;
+      r.innerHTML='<div class="chk" id="sc-'+key+'">✓</div><div class="chk-body">'+
+        '<div class="chk-name">#'+sp[0]+' '+sp[1]+'</div><div class="chk-desc">'+sp[3]+'</div></div>'+
+        '<div class="chk-cost" id="sp-'+key+'">'+sp[2]+' PR</div>';
+      box.appendChild(r);
+      r.querySelector('.chk').onclick=function(){ toggleSpell(key,sp[0]); };
+    });
+  });
+  var cs=el('custom-spells'); cs.innerHTML='';
+  for(var k=0;k<4;k++){
+    var row=document.createElement('div'); row.className='stat-row';
+    row.innerHTML='<span class="step" style="width:56px"><input type="number" inputmode="numeric" id="sp'+k+'n" placeholder="nr"></span>'+
+      '<input class="row-in" id="sp'+k+'x" placeholder="nazwa autorskiego zaklęcia">';
+    cs.appendChild(row);
+    row.querySelectorAll('input').forEach(function(i){ i.oninput=markDirty; });
+  }
+}
+
+/* ─── odświeżanie ───────────────────────────────────── */
+function refresh(){
+  refreshCustomCrit();
+  ATTRS.forEach(function(a){ var i=el('at-'+a.id); if(i && document.activeElement!==i) i.value=attr(a.id); });
+  var spent=0; ATTRS.forEach(function(a){ spent += attr(a.id)-8; });
+  badge('bd-attr', spent+'/18 pkt', spent===18?'ok':(spent<18?'warn':'over'));
+  var over15 = ATTRS.some(function(a){ return attr(a.id)>15; });
+  if(over15) badge('bd-attr', spent+'/18 · atrybut > 15', 'over');
+
+  var artA=0;
+  ARTS.forEach(function(a){
+    var s=S.arts[a.id]; var v=artVal(a.id); artA+=num(s.a);
+    el('ab-'+a.id).textContent = a.bt+' '+artBase(a)+' +10'+(num(s.g)?' · trening +'+num(s.g):'')+' · '+a.d;
+    var ia=el('aa-'+a.id);
+    if(document.activeElement!==ia) ia.value=v;
+    el('ak-'+a.id).textContent='kr.'+crit(v,a.id);
+  });
+  var artOver = ARTS.some(function(a){ return (artBase(a)+10+num(S.arts[a.id].a))>50; });
+  var lk = locked();
+  if(lk) badge('bd-arts', 'start '+artA+'/20 · zamknięte', 'ok');
+  else   badge('bd-arts', artA+'/20 pkt'+(artOver?' · sztuka > 50':''), (artOver||artA>20)?'over':(artA===20?'ok':'warn'));
+  el('hint-arts').textContent = lk
+    ? 'Tworzenie zamknięte — licznik zamrożony na stanie startowym, wartości podbijasz swobodnie.'
+    : 'Wpisujesz gotową wartość — baza jest już w niej zawarta. Licznik pilnuje rozdania startowego (20 pkt, maks. 50 w sztukę). Po skończonym tworzeniu zaznacz „postać gotowa".';
+
+  var skA=0, skOver=false;
+  SKILLS.forEach(function(s){
+    var v=skillVal(s.id); var st=S.skills[s.id]; skA+=num(st.a);
+    if(num(st.a)>25) skOver=true;
+    el('sb-'+s.id).textContent=s.bt+' '+skillBase(s)+(num(st.g)?' · trening +'+num(st.g):'');
+    var ia=el('sa-'+s.id);
+    if(document.activeElement!==ia) ia.value=v;
+    el('sk-'+s.id).textContent='kr.'+crit(v);
+  });
+  if(lk) badge('bd-skills', 'start '+skA+'/100 · zamknięte', 'ok');
+  else   badge('bd-skills', skA+'/100 pkt'+(skOver?' · >25 w jedną':''), (skOver||skA>100)?'over':(skA===100?'ok':'warn'));
+  el('hint-skills').textContent = lk
+    ? 'Tworzenie zamknięte — licznik zamrożony na stanie startowym.'
+    : 'Rozdanie startowe: 100 pkt, maks. +25 w jedną. Baza z atrybutów jest już wliczona w pole.';
+
+  TECHS.forEach(function(t){
+    var okThr = artVal(t.a)>=t.t && (!t.req || artVal('kido')>=t.req.kido);
+    var row=el('tr-'+t.id), c=el('tc-'+t.id);
+    row.classList.toggle('locked', !okThr && !S.techs[t.id]);
+    c.classList.toggle('on', !!S.techs[t.id]);
+    c.classList.toggle('dis', !okThr && !S.techs[t.id]);
+  });
+
+  var kid=artVal('kido');
+  badge('bd-kido','Kidō '+kid+' · dostępne zaklęcia ≤ '+kid,'ok');
+  [['H',HADO],['B',BAKUDO]].forEach(function(p){
+    p[1].forEach(function(sp){
+      var key=p[0]+sp[0], row=el('sr-'+key), c=el('sc-'+key);
+      var okv = kid>=sp[0];
+      row.classList.toggle('locked', !okv && !S.spells[key]);
+      c.classList.toggle('on', !!S.spells[key]);
+      c.classList.toggle('dis', !okv && !S.spells[key]);
+      var pr = Math.max(1, Math.ceil(sp[0]/10) - (S.techs['kid80']?1:0));
+      el('sp-'+key).textContent = pr+' PR';
+    });
+  });
+
+  el('pz-max').textContent=pzMax(); el('pr-max').textContent=prMax();
+  var pz=num(el('f-pz').value,0), pr=num(el('f-pr').value,0);
+  var pzp=pzMax()?Math.max(0,Math.min(100,Math.round(pz/pzMax()*100))):0;
+  var prp=prMax()?Math.max(0,Math.min(100,Math.round(pr/prMax()*100))):0;
+  el('pz-bar').style.width=pzp+'%'; el('pz-bar').style.background=pzp>50?'var(--c2)':pzp>25?'var(--a2)':'var(--r2)';
+  el('pr-bar').style.width=prp+'%'; el('pr-bar').style.background=prp>50?'var(--c2)':prp>25?'var(--a2)':'var(--r2)';
+  el('pz-note').textContent = pz<=0 ? 'UMIERASZ — masz '+Math.ceil(attr('krz')/2)+' rund. Stabilizacja: akcja + Medycyna albo kaidō.' : '';
+  el('pz-note').style.color = pz<=0 ? 'var(--r3)' : 'var(--t0)';
+
+  var der=[
+    ['PŻ MAX', pzMax(), 'KRZ+DSZ · nie rośnie nigdy',''],
+    ['PR MAX', prMax(), 'DSZ+WOL+10×tier',''],
+    ['DR', drTotal(), drTotal()?'z zanpakutō/cechy':'brak pancerza','' ],
+    ['KOLEJNOŚĆ', attr('ref'), 'malejący REF, bez rzutu',''],
+    ['BONUS OBR.', '+'+Math.floor(attr('sil')/5), 'SIŁ ÷ 5',''],
+    ['RUNDY UMIER.', Math.ceil(attr('krz')/2), 'KRZ ÷ 2 w górę','']
+  ];
+  el('der-box').innerHTML = der.map(function(x){
+    return '<div class="der '+(x[3]||'')+'"><div class="der-l">'+x[0]+'</div><div class="der-v">'+x[1]+'</div><div class="der-n">'+x[2]+'</div></div>';
+  }).join('');
+
+  el('rel-state').textContent = relState()==='seal'?'utrzymanie: —':(relState()==='shikai'?'utrzymanie 2 PR/rundę':'utrzymanie 5 PR/rundę');
+  el('rel-state').className = 'rel-state'+(relState()!=='seal'?' on':'');
+  el('pd-total').textContent = num(el('f-pd').value,0)+num(el('f-pdw').value,0);
+  markDirty();
+}
+function badge(id,txt,cls){ var b=el(id); b.textContent=txt; b.className='badge b-'+(cls==='ok'?'ok':cls==='over'?'over':'warn'); }
+
+/* ─── zakupy za PD ──────────────────────────────────── */
+function toggleTech(t){
+  if(S.techs[t.id]) delete S.techs[t.id]; else S.techs[t.id]=true;
+  refresh();
+}
+function toggleSpell(key,nr){
+  if(S.spells[key]) delete S.spells[key]; else S.spells[key]=true;
+  refresh();
+}
+
+var toastTimer=null;
+function toast(big, txt, cls, sub){
+  el('toast-r').textContent=big; el('toast-t').textContent=txt||''; el('toast-v').textContent=sub||'';
+  var t=el('toast'); t.className='show '+(cls||'');
+  clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.className=''; }, 4200);
+}
+function buildWoundPick(){
+  var sel=el('wound-pick');
+  WOUNDS.forEach(function(w,i){ sel.innerHTML+='<option value="'+(i+1)+'">'+(i+1)+' — '+w+'</option>'; });
+  sel.onchange=function(){
+    var r=num(sel.value,0); if(!r) return;
+    var ta=el('f-rany'); ta.value=(ta.value?ta.value+'\n':'')+'k10='+r+' · '+WOUNDS[r-1];
+    sel.value=''; markDirty();
+  };
+}
+
+/* ─── PŻ / PR / uwolnienia ──────────────────────────── */
+function bumpPZ(n){ el('f-pz').value = num(el('f-pz').value,0)+n; refresh(); }
+function bumpPR(n){ el('f-pr').value = Math.max(0,num(el('f-pr').value,0)+n); refresh(); }
+function bumpWycz(n){ el('f-wycz').value=Math.max(0,num(el('f-wycz').value,0)+n); refresh(); }
+function applyTypeForm(which){
+  if(which==='typ'){
+    el('typ-custom').style.display = el('f-zan-typ').value==='custom'?'block':'none';
+    var t=ZTYPES.find(function(x){return x[0]===zTyp();});
+    if(t && t[1]){ if(!el('f-zan-pas').value) el('f-zan-pas').value=t[1]; if(!el('f-zan-akt').value) el('f-zan-akt').value=t[2]; }
+  } else {
+    el('forma-custom').style.display = el('f-zan-forma').value==='custom'?'block':'none';
+    var f=ZFORMS.find(function(x){return x[0]===zForma();});
+    if(f && f[1]) el('zan-hint').textContent='Forma: '+f[1];
+  }
+  refresh();
+}
+
+/* ─── zapis lokalny + kod ───────────────────────────── */
+function collectData(){
+  var d0={ v:1, attrs:{}, arts:{}, skills:{}, techs:S.techs, spells:S.spells, cs:[], sp:[] };
+  ATTRS.forEach(function(a){ d0.attrs[a.id]=attr(a.id); });
+  ARTS.forEach(function(a){ d0.arts[a.id]={a:num(S.arts[a.id].a),g:num(S.arts[a.id].g)}; });
+  SKILLS.forEach(function(s){ d0.skills[s.id]={a:num(S.skills[s.id].a),g:num(S.skills[s.id].g)}; });
+  for(var k=0;k<4;k++){ d0.cs.push({n:el('cs'+k+'n').value||'', v:el('cs'+k+'v').value||''});
+                        d0.sp.push({n:el('sp'+k+'n').value||'', x:el('sp'+k+'x').value||''}); }
+  TXT_FIELDS.forEach(function(f){ var e=el(f); if(e) d0[f]=e.value; });
+  d0.gotowa = locked();
+  return d0;
+}
+function applyData(d0){
+  if(!d0) return;
+  loading = true;
+  suppressSave = true;
+  S.attrs={}; S.arts={}; S.skills={}; S.techs=d0.techs||{}; S.spells=d0.spells||{};
+  if(d0.rel && el('f-rel')) el('f-rel').value=d0.rel;
+  ATTRS.forEach(function(a){ S.attrs[a.id]=num((d0.attrs||{})[a.id],8); });
+  ARTS.forEach(function(a){ var x=(d0.arts||{})[a.id]||{}; S.arts[a.id]={a:num(x.a),g:num(x.g)}; });
+  SKILLS.forEach(function(s){ var x=(d0.skills||{})[s.id]||{}; S.skills[s.id]={a:num(x.a),g:num(x.g)}; });
+  TXT_FIELDS.forEach(function(f){ var e=el(f); if(e && d0[f]!==undefined) e.value=d0[f]; });
+  el('f-gotowa').checked = !!d0.gotowa;
+  el('typ-custom').style.display   = el('f-zan-typ').value==='custom'?'block':'none';
+  el('forma-custom').style.display = el('f-zan-forma').value==='custom'?'block':'none';
+  for(var k=0;k<4;k++){
+    var c=(d0.cs||[])[k]||{}; el('cs'+k+'n').value=c.n||''; el('cs'+k+'v').value=c.v||'';
+    var s=(d0.sp||[])[k]||{}; el('sp'+k+'n').value=s.n||''; el('sp'+k+'x').value=s.x||'';
+  }
+  refresh();
+  suppressSave = false;
+}
+function saveLocal(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(collectData())); }catch(e){} }
+function loadLocal(){ try{ var r=localStorage.getItem(SAVE_KEY); if(r) applyData(JSON.parse(r)); }catch(e){} }
+function refreshCustomCrit(){
+  for(var k=0;k<4;k++){
+    var e=el('csk'+k); if(!e) continue;
+    var v=num(el('cs'+k+'v').value,0);
+    e.textContent='kr.'+Math.max(1,Math.ceil(v/10));
+  }
+}
+function markDirty(){
+  if(suppressSave) return;
+  clearTimeout(dirtyTimer);
+  dirtyTimer=setTimeout(function(){ saveLocal(); cloudSave(); flash('zapisano lokalnie'); }, 700);
+}
+function flash(t){ var m=el('save-msg'); m.textContent=t; setTimeout(function(){ m.textContent=''; },1600); }
+function resetSheet(){
+  ATTRS.forEach(function(a){ S.attrs[a.id]=8; });
+  ARTS.forEach(function(a){ S.arts[a.id]={a:0,g:0}; });
+  SKILLS.forEach(function(s){ S.skills[s.id]={a:0,g:0}; });
+  S.techs={}; S.spells={}; el('f-gotowa').checked=false;
+  TXT_FIELDS.forEach(function(f){ var e=el(f); if(!e) return;
+    if(e.tagName==='SELECT') e.selectedIndex=0; else e.value=(f==='f-pd'||f==='f-pdw'||f==='f-pz'||f==='f-pr'||f==='f-wycz'||f==='f-dr-manual')?'0':'';
+  });
+  for(var k=0;k<4;k++){ el('cs'+k+'n').value=''; el('cs'+k+'v').value=''; el('sp'+k+'n').value=''; el('sp'+k+'x').value=''; }
+  el('f-pz').value=pzMax(); el('f-pr').value=prMax();
+  refresh();
+}
+function confirmReset(){ if(confirm('Wyczyścić kartę na ekranie? (postać w chmurze zostaje)')) resetSheet(); }
+function openExport(){ el('modal-title').textContent='EKSPORT KODU'; el('modal-ta').value=btoa(unescape(encodeURIComponent(JSON.stringify(collectData()))));
+  el('modal-copy').style.display=''; el('modal-import').style.display='none'; el('modal-status').textContent='Skopiuj i zachowaj jako backup.'; el('modal').classList.add('open'); }
+function openImport(){ el('modal-title').textContent='IMPORT KODU'; el('modal-ta').value='';
+  el('modal-copy').style.display='none'; el('modal-import').style.display=''; el('modal-status').textContent='Wklej kod z eksportu.'; el('modal').classList.add('open'); }
+function closeModal(){ el('modal').classList.remove('open'); }
+function copyModal(){ var t=el('modal-ta'); t.select(); try{ document.execCommand('copy'); }catch(e){} el('modal-status').textContent='Skopiowano.'; }
+function doImport(){
+  try{ applyData(JSON.parse(decodeURIComponent(escape(atob(el('modal-ta').value.trim()))))); closeModal(); flash('wczytano kod'); }
+  catch(e){ el('modal-status').textContent='Nie rozpoznaję tego kodu. Wklej całość z eksportu.'; }
+}
+
+/* ═══════════════ FIREBASE ═══════════════════════════ */
+var fbReady = (FIREBASE_CONFIG.apiKey !== 'BRAK');
+var fbAuth, fbDB, fbUser=null, userNick='', userRole={gm:false,admin:false};
+var currentCharId=null, currentSlug='', charCache=[], isNewChar=false, cloudTimer=null;
+
+function initFirebase(){
+  if(!fbReady){ var n=el('setup-note'); n.textContent='Tryb offline — karta zapisuje się tylko na tym urządzeniu (uzupełnij FIREBASE_CONFIG).'; n.style.display='block'; return; }
+  var SDK=['https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
+           'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js',
+           'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js'];
+  (function next(i){
+    if(i>=SDK.length){ setupFirebase(); return; }
+    var s=document.createElement('script'); s.src=SDK[i];
+    s.onload=function(){ next(i+1); }; s.onerror=function(){ next(i+1); };
+    document.head.appendChild(s);
+  })(0);
+}
+function setupFirebase(){
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    fbAuth=firebase.auth(); fbDB=firebase.firestore();
+    el('btn-login').style.display='inline-block';
+    fbAuth.onAuthStateChanged(function(u){
+      fbUser=u;
+      el('auth-login').style.display = u?'none':'flex';
+      el('auth-user').style.display  = u?'flex':'none';
+      if(u){ if(u.photoURL){ el('auth-avatar').src=u.photoURL; el('auth-avatar').style.display='block'; } checkNick(u); }
+    });
+  }catch(e){ var n=el('setup-note'); n.textContent='Błąd Firebase: '+e.message; n.style.display='block'; }
+}
+function loginGoogle(){ if(!fbAuth) return; fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(e){ alert('Logowanie nieudane: '+e.message); }); }
+function logoutUser(){
+  if(!fbAuth) return;
+  if(!confirm('Wylogować się?')) return;
+  fbAuth.signOut(); userRole={gm:false,admin:false}; currentCharId=null; currentSlug='';
+  el('tab-bar').style.display='none'; showMainTab('karta');
+}
+function cloudStatus(msg,c){ var e=el('cloud-status'); e.textContent=msg?'☁ '+msg:''; e.style.color = c==='g'?'var(--c3)':c==='a'?'var(--a3)':c==='r'?'var(--r3)':'var(--t0)'; }
+
+function checkNick(u){
+  fbDB.collection('users').doc(u.uid).get().then(function(doc){
+    if(doc.exists && doc.data().nick){
+      userNick=doc.data().nick; el('auth-name').textContent=userNick;
+      afterLogin(u);
+    } else { el('nick-input').value=''; el('nick-modal').classList.add('open'); setTimeout(function(){ el('nick-input').focus(); },150); }
+  }).catch(function(e){ cloudStatus('brak dostępu: '+e.code,'r'); });
+}
+function saveNick(){
+  var nick=(el('nick-input').value||'').trim(), err=el('nick-error');
+  if(nick.length<2){ err.textContent='Minimum 2 znaki.'; return; }
+  if(nick.length>24){ err.textContent='Maksimum 24 znaki.'; return; }
+  err.textContent='';
+  fbDB.collection('users').doc(fbUser.uid).set({ nick:nick, email:fbUser.email||'', createdAt:firebase.firestore.FieldValue.serverTimestamp() },{merge:true})
+  .then(function(){ userNick=nick; el('auth-name').textContent=nick; el('nick-modal').classList.remove('open'); afterLogin(fbUser); })
+  .catch(function(e){ err.textContent='Nie zapisano: '+e.message; });
+}
+function afterLogin(u){
+  el('tab-bar').style.display='flex';
+  loadRole(u.uid); loadCharList(); writeLog('login',{});
+}
+function loadRole(uid){
+  if(uid===ADMIN_UID){ userRole={gm:true,admin:true}; applyRole(); return; }
+  fbDB.collection('roles').doc(uid).get().then(function(d0){
+    userRole = d0.exists ? {gm:!!d0.data().gm, admin:!!d0.data().admin} : {gm:false,admin:false};
+    applyRole();
+  }).catch(function(){ applyRole(); });
+}
+function applyRole(){ el('tbtn-gm').style.display = (userRole.gm||userRole.admin)?'':'none'; }
+function showMainTab(name){
+  el('karta-section').style.display = name==='karta'?'':'none';
+  el('gm-section').style.display    = name==='gm'?'':'none';
+  ['karta','gm'].forEach(function(t){ var b=el('tbtn-'+t); if(b) b.classList.toggle('active',t===name); });
+  if(name==='gm'){ gmLoadRoster(); cmbSubscribe(); }
+}
+
+/* ─── unikalne imiona (anty-duplikat / anty-duch) ───── */
+function slugify(s){
+  return (s||'').toLowerCase().trim()
+    .replace(/ą/g,'a').replace(/ć/g,'c').replace(/ę/g,'e').replace(/ł/g,'l').replace(/ń/g,'n')
+    .replace(/ó/g,'o').replace(/ś/g,'s').replace(/[żź]/g,'z').replace(/ō/g,'o').replace(/ū/g,'u')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').substring(0,60);
+}
+function claimName(slug, charId){
+  var ref=fbDB.collection('names').doc(slug);
+  return fbDB.runTransaction(function(tx){
+    return tx.get(ref).then(function(doc){
+      if(doc.exists){
+        var d0=doc.data();
+        if(d0.uid!==fbUser.uid) throw new Error('TAKEN');
+        if(d0.charId!==charId)  throw new Error('TAKEN_SELF');
+        return;
+      }
+      tx.set(ref,{ uid:fbUser.uid, charId:charId, nick:userNick||'', createdAt:firebase.firestore.FieldValue.serverTimestamp() });
+    });
+  });
+}
+
+/* ─── lista postaci ─────────────────────────────────── */
+function loadCharList(){
+  if(!fbUser||!fbDB) return;
+  fbDB.collection('users').doc(fbUser.uid).collection('characters').orderBy('lastModified','desc').get()
+  .then(function(snap){
+    charCache = snap.docs.map(function(x){ var v=x.data(); return {id:x.id, imie:v.imie, dywizja:v.dywizja, slug:v.nameSlug, charData:v.charData}; });
+    rebuildCharSelect();
+    if(!currentCharId && charCache.length){
+      var pick=charCache[0];
+      try{ var l=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')['f-imie'];
+        if(l){ var m=charCache.filter(function(c){return c.imie===l;})[0]; if(m) pick=m; } }catch(e){}
+      openChar(pick.id);
+    }
+  }).catch(function(e){ cloudStatus('błąd listy: '+e.code,'r'); });
+}
+function rebuildCharSelect(){
+  var s=el('char-select'); s.innerHTML='<option value="">— wybierz postać —</option>';
+  charCache.forEach(function(c){
+    var o=document.createElement('option'); o.value=c.id;
+    o.textContent=(c.imie||'bez imienia')+(c.dywizja?'  ('+c.dywizja+'. dyw.)':'');
+    if(c.id===currentCharId) o.selected=true;
+    s.appendChild(o);
+  });
+}
+function onCharSelect(id){ if(id) openChar(id); }
+function openChar(id){
+  cloudStatus('wczytywanie...','a');
+  fbDB.collection('users').doc(fbUser.uid).collection('characters').doc(id).get().then(function(doc){
+    if(!doc.exists){ cloudStatus('nie ma takiej karty','r'); loadCharList(); return; }
+    currentCharId=id; isNewChar=false; currentSlug=doc.data().nameSlug||'';
+    applyData(doc.data().charData);
+    saveLocal();
+    el('char-select').value=id; el('btn-del-char').style.display='inline-block';
+    cloudStatus('zsynchronizowano','g');
+  }).catch(function(e){ cloudStatus('błąd: '+e.code,'r'); });
+}
+function newCharClick(){
+  if(!fbUser){ alert('Najpierw się zaloguj.'); return; }
+  if(charCache.length>=MAX_CHARS){ alert('Limit '+MAX_CHARS+' postaci na konto. Usuń którąś, żeby zrobić miejsce.'); return; }
+  currentCharId=null; currentSlug=''; isNewChar=true;
+  resetSheet();
+  el('char-select').value=''; el('btn-del-char').style.display='none';
+  cloudStatus('nowa postać — wpisz imię, żeby zapisać','a');
+}
+function deleteCurrentChar(){
+  if(!fbUser||!currentCharId) return;
+  var name=(el('f-imie').value||'').trim();
+  if(prompt('Usuwam postać na stałe. Wpisz jej imię, żeby potwierdzić:')!==name){ alert('Imię się nie zgadza — nic nie usunąłem.'); return; }
+  var id=currentCharId, slug=currentSlug;
+  fbDB.collection('users').doc(fbUser.uid).collection('characters').doc(id).delete()
+  .then(function(){
+    var p=[fbDB.collection('roster').doc(id).delete().catch(function(){})];
+    if(slug) p.push(fbDB.collection('names').doc(slug).delete().catch(function(){}));
+    return Promise.all(p);
+  })
+  .then(function(){
+    writeLog('delete',{charId:id,imie:name});
+    currentCharId=null; currentSlug=''; isNewChar=false;
+    el('btn-del-char').style.display='none'; el('char-select').value='';
+    resetSheet(); loadCharList(); cloudStatus('usunięto','g');
+  }).catch(function(e){ alert('Nie udało się usunąć: '+e.message); });
+}
+
+/* ─── zapis do chmury ───────────────────────────────── */
+function cloudSave(){
+  if(!fbUser||!fbDB) return;
+  clearTimeout(cloudTimer);
+  cloudTimer=setTimeout(function(){
+    var data=collectData(), name=(data['f-imie']||'').trim();
+    if(name.length<2){ cloudStatus('wpisz imię, żeby zapisać w chmurze','a'); return; }
+    var slug=slugify(name);
+    if(!slug){ cloudStatus('imię musi mieć litery lub cyfry','a'); return; }
+    if(!currentCharId){
+      if(!isNewChar && charCache.length){ cloudStatus('wybierz postać z listy albo „+ Nowa"','a'); return; }
+      if(charCache.length>=MAX_CHARS){ cloudStatus('limit '+MAX_CHARS+' postaci','r'); return; }
+      currentCharId = fbDB.collection('users').doc(fbUser.uid).collection('characters').doc().id;
+      isNewChar=false;
+    }
+    var charId=currentCharId, oldSlug=currentSlug;
+    cloudStatus('zapis...','a');
+    claimName(slug,charId).then(function(){
+      currentSlug=slug;
+      return fbDB.collection('users').doc(fbUser.uid).collection('characters').doc(charId).set({
+        imie:name, dywizja:el('f-dywizja').value||'', nameSlug:slug,
+        lastModified:firebase.firestore.FieldValue.serverTimestamp(), charData:data
+      });
+    }).then(function(){
+      if(oldSlug && oldSlug!==slug) fbDB.collection('names').doc(oldSlug).delete().catch(function(){});
+      return writeRoster(charId,name,data);
+    }).then(function(){
+      cloudStatus('zsynchronizowano','g');
+      var known=charCache.filter(function(c){return c.id===charId;})[0];
+      if(!known || known.imie!==name) loadCharList();
+    }).catch(function(e){
+      if(e.message==='TAKEN'){ cloudStatus('imię „'+name+'" jest już zajęte','r'); alert('Postać o tym imieniu już istnieje (u innego gracza). Wybierz inne imię — to blokada przed duplikatami.'); }
+      else if(e.message==='TAKEN_SELF'){ cloudStatus('to imię ma już inna Twoja postać','r'); alert('Masz już postać o tym imieniu. Jedno imię = jedna karta.'); }
+      else { cloudStatus('błąd zapisu: '+(e.code||e.message),'r'); }
+    });
+  }, 1800);
+}
+function writeRoster(charId,name,data){
+  return fbDB.collection('roster').doc(charId).set({
+    uid:fbUser.uid, nick:userNick||'?', imie:name,
+    dywizja:el('f-dywizja').value||'', ranga:el('f-ranga').value||'',
+    tier:tierBase(), tierEf:tierEff(), rel:relState(),
+    pz:num(el('f-pz').value,0), pzMax:pzMax(),
+    pr:num(el('f-pr').value,0), prMax:prMax(),
+    dr:drTotal(), wycz:num(el('f-wycz').value,0),
+    ref:attr('ref'), hoho:artVal('hoho'),
+    zanjutsu:artVal('zanjutsu'), hakuda:artVal('hakuda'), kido:artVal('kido'),
+    step10:(S.techs['zan60']||S.techs['hoh60'])?10:20,
+    zanzo:!!S.techs['hoh80'],
+    lastModified:firebase.firestore.FieldValue.serverTimestamp(),
+    charData:data
+  });
+}
+function writeLog(action,details){
+  if(!fbUser||!fbDB) return;
+  var ttl=new Date(); ttl.setDate(ttl.getDate()+3);
+  fbDB.collection('logs').add({ uid:fbUser.uid, nick:userNick||'?', action:action,
+    timestamp:firebase.firestore.FieldValue.serverTimestamp(),
+    deleteAt:firebase.firestore.Timestamp.fromDate(ttl), details:details||{} }).catch(function(){});
+}
+
+/* ═══════════════ PANEL MG ═══════════════════════════ */
+var gmRoster=[], gmOpenId=null;
+function showGmTab(n){
+  ['roster','walka'].forEach(function(t){ el('gmp-'+t).classList.toggle('on',t===n); });
+  document.querySelectorAll('.gm-tab').forEach(function(b,i){ b.classList.toggle('active', ['roster','walka'][i]===n); });
+}
+function gmLoadRoster(){
+  if(!fbDB||!fbUser) return;
+  fbDB.collection('roster').get().then(function(snap){
+    gmRoster=snap.docs.map(function(x){ var o=x.data(); o.id=x.id; return o; })
+      .sort(function(a,b){ return (b.tierEf||0)-(a.tierEf||0) || (a.imie||'').localeCompare(b.imie||''); });
+    el('gm-count').textContent='('+gmRoster.length+')';
+    el('gm-empty').style.display = gmRoster.length?'none':'block';
+    var g=el('gm-roster-grid'); g.innerHTML='';
+    gmRoster.forEach(function(c){
+      var card=document.createElement('div'); card.className='gm-card';
+      card.onclick=function(){ gmDetail(c.id); };
+      card.innerHTML=
+        '<div class="gm-card-name">'+escHtml(c.imie||'???')+' <span class="tier-chip">tier '+(c.tierEf||0)+'</span></div>'+
+        '<div class="gm-card-sub">'+escHtml(c.dywizja?c.dywizja+'. dywizja':'—')+' · '+escHtml(c.ranga||'')+(c.nick?' · '+escHtml(c.nick):'')+'</div>'+
+        bar('PŻ',c.pz,c.pzMax)+bar('PR',c.pr,c.prMax)+
+        '<div class="gm-stat"><span class="gm-stat-l">STAN</span><span class="gm-stat-v" style="min-width:0;flex:1">'+
+          (c.rel==='bankai'?'BANKAI':c.rel==='shikai'?'Shikai':'zapieczętowane')+
+          (c.wycz?' · wycz. −'+(c.wycz*20):'')+(c.dr?' · DR '+c.dr:'')+'</span></div>'+
+        '<div class="gm-ts">'+timeAgo(c.lastModified)+'</div>';
+      g.appendChild(card);
+    });
+  }).catch(function(e){ el('gm-empty').style.display='block'; el('gm-empty').textContent='Brak dostępu do drużyny: '+e.code; });
+}
+function bar(l,v,m){
+  v=num(v,0); m=num(m,0);
+  var p=m?Math.max(0,Math.min(100,Math.round(v/m*100))):0;
+  var c=p>50?'var(--c2)':p>25?'var(--a2)':'var(--r2)';
+  return '<div class="gm-stat"><span class="gm-stat-l">'+l+'</span><span class="gm-stat-v">'+v+'/'+m+'</span>'+
+         '<div class="gm-bar"><div class="gm-bar-f" style="width:'+p+'%;background:'+c+'"></div></div></div>';
+}
+function timeAgo(ts){
+  if(!ts||!ts.seconds) return '';
+  var s=Math.round(Date.now()/1000-ts.seconds);
+  if(s<60) return s+' s temu'; if(s<3600) return Math.round(s/60)+' min temu';
+  if(s<86400) return Math.round(s/3600)+' h temu'; return Math.round(s/86400)+' dni temu';
+}
+function gmDetail(id){
+  var c=gmRoster.filter(function(x){return x.id===id;})[0]; if(!c) return;
+  gmOpenId=id;
+  var d0=c.charData||{};
+  el('gd-title').textContent=c.imie||'???';
+  var h='';
+  h+='<div class="gd-row"><span class="gd-l">Gracz</span><span class="gd-v">'+escHtml(c.nick||'—')+'</span></div>';
+  h+='<div class="gd-row"><span class="gd-l">Dywizja / ranga</span><span class="gd-v">'+escHtml(c.dywizja||'—')+' · '+escHtml(c.ranga||'—')+'</span></div>';
+  h+='<div class="gd-row"><span class="gd-l">Tier</span><span class="gd-v">bazowy '+(c.tier||0)+' · efektywny '+(c.tierEf||0)+' ('+(c.rel==='seal'?'zapieczętowane':c.rel)+')</span></div>';
+  h+='<div class="gd-row"><span class="gd-l">PŻ / PR</span><span class="gd-v">'+c.pz+'/'+c.pzMax+' · '+c.pr+'/'+c.prMax+'</span></div>';
+  h+='<div class="gd-row"><span class="gd-l">DR / Wyczerpanie</span><span class="gd-v">'+(c.dr||0)+' · '+(c.wycz||0)+' pozioma(ów)</span></div>';
+  h+='<div class="gd-sec">ATRYBUTY</div><div class="gd-row"><span class="gd-v">'+
+     ATTRS.map(function(a){ return a.ab+' '+num((d0.attrs||{})[a.id],8); }).join(' · ')+'</span></div>';
+  h+='<div class="gd-sec">SZTUKI</div>';
+  ARTS.forEach(function(a){
+    var b=num((d0.attrs||{})[a.b[0]],8)+num((d0.attrs||{})[a.b[1]],8);
+    var x=(d0.arts||{})[a.id]||{}; var v=b+10+num(x.a)+num(x.g);
+    h+='<div class="gd-row"><span class="gd-l">'+a.n+'</span><span class="gd-v">'+v+'% · krytyk ≤ '+Math.max(1,Math.ceil(v/10))+'</span></div>';
+  });
+  h+='<div class="gd-sec">UMIEJĘTNOŚCI</div>';
+  SKILLS.forEach(function(s){
+    var b=num((d0.attrs||{})[s.b[0]],8)+num((d0.attrs||{})[s.b[1]],8);
+    var x=(d0.skills||{})[s.id]||{}; var v=b+num(x.a)+num(x.g);
+    h+='<div class="gd-row"><span class="gd-l">'+s.n+'</span><span class="gd-v">'+v+'%</span></div>';
+  });
+  var tk=Object.keys(d0.techs||{});
+  if(tk.length){ h+='<div class="gd-sec">TECHNIKI</div><div class="gd-row"><span class="gd-v">'+
+    tk.map(function(k){ var t=TECHS.filter(function(x){return x.id===k;})[0]; return t?t.n:k; }).join(' · ')+'</span></div>'; }
+  var sk=Object.keys(d0.spells||{});
+  if(sk.length){ h+='<div class="gd-sec">ZAKLĘCIA</div><div class="gd-row"><span class="gd-v">'+
+    sk.map(function(k){ return (k[0]==='H'?'Hadō #':'Bakudō #')+k.substring(1); }).join(' · ')+'</span></div>'; }
+  if(d0['f-zan-imie']||d0['f-zan-typ']){
+    h+='<div class="gd-sec">ZANPAKUTŌ</div>';
+    h+='<div class="gd-row"><span class="gd-l">Imię / komenda</span><span class="gd-v">'+escHtml(d0['f-zan-imie']||'—')+' · '+escHtml(d0['f-zan-kom']||'—')+'</span></div>';
+    var _tn = d0['f-zan-typ']==='custom' ? (d0['f-zan-typ-x']||'własny')+' ('+(d0['f-zan-typ-b']||'—')+')' : (d0['f-zan-typ']||'—');
+    var _fn = d0['f-zan-forma']==='custom' ? (d0['f-zan-forma-x']||'własna')+' ('+(d0['f-zan-forma-b']||'—')+')' : (d0['f-zan-forma']||'—');
+    h+='<div class="gd-row"><span class="gd-l">Typ / forma</span><span class="gd-v">'+escHtml(_tn)+' · '+escHtml(_fn)+'</span></div>';
+    if(d0['f-zan-pas']) h+='<div class="gd-row"><span class="gd-l">Pasywka</span><span class="gd-v">'+escHtml(d0['f-zan-pas'])+'</span></div>';
+    if(d0['f-zan-akt']) h+='<div class="gd-row"><span class="gd-l">Aktywka</span><span class="gd-v">'+escHtml(d0['f-zan-akt'])+'</span></div>';
+    if(d0['f-zan-bankai']) h+='<div class="gd-row"><span class="gd-l">Bankai</span><span class="gd-v">'+escHtml(d0['f-zan-bankai'])+'</span></div>';
+  }
+  if(d0['f-rany']){ h+='<div class="gd-sec">TRWAŁE RANY</div><div class="gd-row"><span class="gd-v" style="white-space:pre-wrap">'+escHtml(d0['f-rany'])+'</span></div>'; }
+  if(d0['f-notatki']){ h+='<div class="gd-sec">NOTATKI</div><div class="gd-row"><span class="gd-v" style="white-space:pre-wrap">'+escHtml(d0['f-notatki'])+'</span></div>'; }
+  el('gd-body').innerHTML=h;
+  el('gm-detail').classList.add('open');
+}
+function closeGmDetail(){ el('gm-detail').classList.remove('open'); }
+function gmAddDetailToCombat(){ if(gmOpenId){ cmbAddFromRoster(gmOpenId); closeGmDetail(); showGmTab('walka'); } }
+function gmPurgeEntry(){
+  if(!gmOpenId) return;
+  if(!confirm('Usunąć wpis z listy drużyny? Karta gracza zostaje — zniknie tylko podgląd MG (wróci przy następnym zapisie gracza).')) return;
+  fbDB.collection('roster').doc(gmOpenId).delete().then(function(){ closeGmDetail(); gmLoadRoster(); })
+  .catch(function(e){ alert('Brak uprawnień: '+e.message); });
+}
+
+/* ═══════════ KOLEJKA WALKI (tylko MG) ═══════════════ */
+var CMB = { round:1, idx:0, list:[] };
+var cmbSub=null, cmbTimer=null, cmbLocal=false;
+
+function cmbSubscribe(){
+  if(!fbDB||!fbUser||cmbSub) { cmbRender(); return; }
+  cmbSub = fbDB.collection('combat').doc('current').onSnapshot(function(doc){
+    if(doc.exists){ var d0=doc.data(); CMB={ round:num(d0.round,1), idx:num(d0.idx,0), list:d0.list||[] }; }
+    cmbRender();
+  }, function(){ cmbLocal=true; cmbRender(); });
+}
+function cmbSave(){
+  cmbRender();
+  if(!fbDB||!fbUser||cmbLocal) return;
+  clearTimeout(cmbTimer);
+  cmbTimer=setTimeout(function(){
+    fbDB.collection('combat').doc('current').set({
+      round:CMB.round, idx:CMB.idx, list:CMB.list,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp(), gm:userNick||''
+    }).catch(function(e){ cmbLocal=true; console.warn('combat:',e.message); });
+  }, 400);
+}
+function cmbSort(){
+  CMB.list.sort(function(a,b){
+    return (b.ref-a.ref) || (b.hoho-a.hoho) || ((b.pc?1:0)-(a.pc?1:0));
+  });
+}
+function cmbAddFromRoster(id){
+  var c=gmRoster.filter(function(x){return x.id===id;})[0]; if(!c) return;
+  if(CMB.list.some(function(f){ return f.id===id; })){ toast('JUŻ W KOLEJCE', c.imie, 'fail'); return; }
+  CMB.list.push({ id:id, name:c.imie, pc:true, ref:num(c.ref,8), hoho:num(c.hoho,0),
+    tier:num(c.tierEf,0), pz:num(c.pz,0), pzMax:num(c.pzMax,0), pr:num(c.pr,0), prMax:num(c.prMax,0),
+    react:0, step:num(c.step10,20), sur:false, zanzo:!!c.zanzo, zanzoUsed:false, rel:c.rel||'seal' });
+  cmbSort(); cmbSave();
+}
+function cmbOpenPick(){
+  var box=el('cmb-pick-list'); box.innerHTML='';
+  if(!gmRoster.length) box.innerHTML='<div class="empty">Najpierw odśwież drużynę.</div>';
+  gmRoster.forEach(function(c){
+    var r=document.createElement('div'); r.className='char-row';
+    r.innerHTML='<span style="flex:1">'+escHtml(c.imie)+'</span><span style="font-size:9px;color:var(--t0)">REF '+c.ref+' · tier '+c.tierEf+'</span>';
+    r.onclick=function(){ cmbAddFromRoster(c.id); el('cmb-pick').classList.remove('open'); showGmTab('walka'); };
+    box.appendChild(r);
+  });
+  el('cmb-pick').classList.add('open');
+}
+function cmbAddNpc(){
+  var name=prompt('Nazwa BN-a (np. Adjuchas „Kość"):'); if(!name) return;
+  var ref=num(prompt('Refleks (kolejność):','10'),10);
+  var tier=num(prompt('Tier efektywny:','1'),1);
+  var pz=num(prompt('PŻ (0 = statysta, ginie od jednego trafienia):','15'),15);
+  var pr=num(prompt('PR:','16'),16);
+  CMB.list.push({ id:'npc-'+Date.now(), name:name, pc:false, ref:ref, hoho:0, tier:tier,
+    pz:pz, pzMax:pz, pr:pr, prMax:pr, react:0, step:20, sur:false, zanzo:false, zanzoUsed:false, rel:'seal' });
+  cmbSort(); cmbSave();
+}
+function gmAddAllToCombat(){ gmRoster.forEach(function(c){ if(!CMB.list.some(function(f){return f.id===c.id;})) cmbAddFromRoster(c.id); }); showGmTab('walka'); }
+function cmbReset(){ if(!confirm('Wyczyścić kolejkę walki?')) return; CMB={round:1,idx:0,list:[]}; cmbSave(); }
+function cmbRemove(i){ CMB.list.splice(i,1); if(CMB.idx>=CMB.list.length) CMB.idx=0; cmbSave(); }
+function cmbNextTurn(){
+  if(!CMB.list.length) return;
+  CMB.idx++;
+  if(CMB.idx>=CMB.list.length){ CMB.idx=0; CMB.round++; CMB.list.forEach(function(f){ f.sur=false; }); }
+  startTurn(CMB.list[CMB.idx]);
+  cmbSave();
+}
+function cmbNextRound(){
+  CMB.round++; CMB.idx=0;
+  CMB.list.forEach(function(f){ f.react=0; f.sur=false; });
+  if(CMB.list[0]) startTurn(CMB.list[0]);
+  cmbSave();
+}
+function startTurn(f){
+  if(!f) return;
+  f.react=0;                                  /* licznik reakcji zeruje się na początku tury */
+  if(f.rel!=='seal'){
+    var c = f.rel==='shikai'?2:5;
+    if(f.pr>=c){ f.pr-=c; toast(f.name,'Utrzymanie '+(f.rel==='shikai'?'Shikai −2 PR':'Bankai −5 PR')+' · PR '+f.pr+'/'+f.prMax,''); }
+    else { f.rel='seal'; toast(f.name,'Zabrakło PR — uwolnienie się zapieczętowało.','pech'); }
+  }
+}
+function cmbReact(i,delta){
+  var f=CMB.list[i];
+  if(delta>0 && f.sur && CMB.round===1){ toast(f.name,'Zaskoczony — nie ma reakcji w 1. rundzie.','fail'); return; }
+  f.react=Math.max(0,f.react+delta);
+  if(delta>0){
+    var pen=(f.react-1)*f.step;
+    toast(f.name, 'Reakcja nr '+f.react+(pen?' z karą −'+pen:' bez kary'), pen>=40?'pech':pen?'':'krit');
+  }
+  cmbSave();
+}
+function cmbAdj(i,field,delta){ var f=CMB.list[i]; f[field]=Math.max(0,num(f[field])+delta); cmbSave(); }
+function cmbSet(i,field,v){ CMB.list[i][field]=Math.max(0,num(v)); cmbSave(); }
+function cmbTag(i,tag){
+  var f=CMB.list[i];
+  if(tag==='sur') f.sur=!f.sur;
+  if(tag==='step') f.step = f.step===20?10:20;
+  if(tag==='zanzo') f.zanzoUsed=!f.zanzoUsed;
+  if(tag==='shikai'){ f.rel = f.rel==='shikai'?'seal':'shikai'; if(f.rel==='shikai') f.pr=Math.max(0,f.pr-3); }
+  if(tag==='bankai'){ f.rel = f.rel==='bankai'?'seal':'bankai'; if(f.rel==='bankai') f.pr=Math.max(0,f.pr-8); }
+  cmbSave();
+}
+function cmbShunpo(i){
+  var f=CMB.list[i];
+  if(f.pr<1){ toast(f.name,'Brak PR na shunpo.','fail'); return; }
+  f.pr-=1; toast(f.name,'Shunpo −1 PR · dodatkowy unik bez kary kumulatywnej','krit'); cmbSave();
+}
+function cmbRender(){
+  var box=el('cmb-list'); if(!box) return;
+  el('cmb-round').textContent=CMB.round;
+  el('cmb-empty').style.display = CMB.list.length?'none':'block';
+  var act=CMB.list[CMB.idx];
+  el('cmb-turn-note').innerHTML = act
+    ? 'Tura: <b style="color:var(--c3)">'+escHtml(act.name)+'</b> · 1 akcja + ruch o strefę'+(cmbLocal?' · <span style="color:var(--a3)">tryb lokalny</span>':'')
+    : 'Kolejność: malejący Refleks. Remis → wyższe Hohō → gracze przed BN-ami.';
+  box.innerHTML='';
+  CMB.list.forEach(function(f,i){
+    var nextPen = f.react*f.step;
+    var div=document.createElement('div');
+    div.className='fighter'+(i===CMB.idx?' act':'')+(f.pc?' pc':'')+(f.pz<=0?' down':'');
+    var dots=''; for(var k=0;k<4;k++) dots+='<span class="rd'+(k<f.react?' on':'')+'"></span>';
+    div.innerHTML=
+      '<div class="f-head">'+
+        '<span class="f-name">'+(i===CMB.idx?'▸ ':'')+escHtml(f.name)+' <span class="who">'+(f.pc?'gracz':'BN')+' · tier '+f.tier+'</span></span>'+
+        '<span class="f-ref">REF '+f.ref+'</span>'+
+        '<button class="tag" data-x="rm">usuń</button>'+
+      '</div>'+
+      '<div class="f-line">'+
+        '<span class="f-mini"><span>PŻ</span><button data-a="pz-">−</button><input data-i="pz" type="number" inputmode="numeric" value="'+f.pz+'"><button data-a="pz+">+</button><span>/'+f.pzMax+'</span></span>'+
+        '<span class="f-mini"><span>PR</span><button data-a="pr-">−</button><input data-i="pr" type="number" inputmode="numeric" value="'+f.pr+'"><button data-a="pr+">+</button><span>/'+f.prMax+'</span></span>'+
+        '<span class="react-box"><span style="font-size:8px;color:var(--t0)">REAKCJE</span><span class="react-dots">'+dots+'</span>'+
+          '<span class="react-pen'+(nextPen?'':' free')+'">'+(nextPen?'−'+nextPen:'0')+'</span>'+
+          '<button class="btn btn-sm" data-a="r+">reakcja</button><button class="btn btn-sm btn-dim" data-a="r-">cofnij</button></span>'+
+        '<button class="btn btn-sm btn-dim" data-a="shunpo">shunpo −1 PR</button>'+
+      '</div>'+
+      '<div class="f-tags">'+
+        '<button class="tag'+(f.sur?' on':'')+'" data-t="sur">zaskoczony</button>'+
+        '<button class="tag'+(f.step===10?' on':'')+'" data-t="step">krok −10</button>'+
+        (f.zanzo?'<button class="tag'+(f.zanzoUsed?' on':'')+'" data-t="zanzo">Zanzō '+(f.zanzoUsed?'zużyte':'gotowe')+'</button>':'')+
+        '<button class="tag rel-sh'+(f.rel==='shikai'?' on':'')+'" data-t="shikai">Shikai</button>'+
+        '<button class="tag rel-bk'+(f.rel==='bankai'?' on':'')+'" data-t="bankai">Bankai</button>'+
+        (f.pz<=0?'<span class="tag" style="border-color:var(--r1);color:var(--r3)">UMIERA — stabilizacja albo dobicie</span>':'')+
+      '</div>';
+    box.appendChild(div);
+    div.querySelector('[data-x=rm]').onclick=function(){ if(confirm('Usunąć '+f.name+' z kolejki?')) cmbRemove(i); };
+    div.querySelector('[data-a="pz-"]').onclick=function(){ cmbAdj(i,'pz',-1); };
+    div.querySelector('[data-a="pz+"]').onclick=function(){ cmbAdj(i,'pz',1); };
+    div.querySelector('[data-a="pr-"]').onclick=function(){ cmbAdj(i,'pr',-1); };
+    div.querySelector('[data-a="pr+"]').onclick=function(){ cmbAdj(i,'pr',1); };
+    div.querySelector('[data-i=pz]').onchange=function(){ cmbSet(i,'pz',this.value); };
+    div.querySelector('[data-i=pr]').onchange=function(){ cmbSet(i,'pr',this.value); };
+    div.querySelector('[data-a="r+"]').onclick=function(){ cmbReact(i,1); };
+    div.querySelector('[data-a="r-"]').onclick=function(){ cmbReact(i,-1); };
+    div.querySelector('[data-a=shunpo]').onclick=function(){ cmbShunpo(i); };
+    div.querySelectorAll('[data-t]').forEach(function(b){ b.onclick=function(){ cmbTag(i,b.dataset.t); }; });
+  });
+}
+
+/* ═══════════════ START ══════════════════════════════ */
+function bindInputs(){
+  el('f-gotowa').addEventListener('change', refresh);
+  TXT_FIELDS.forEach(function(f){
+    var e=el(f); if(!e) return;
+    e.addEventListener('input', refresh);
+    e.addEventListener('change', refresh);
+  });
+}
+function setupPWA(){
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); });
+  }
+}
+function boot(){
+  buildSelects(); buildAttrs(); buildArts(); buildSkills(); buildTechs(); buildSpells(); buildWoundPick();
+  ATTRS.forEach(function(a){ S.attrs[a.id]=8; });
+  ARTS.forEach(function(a){ S.arts[a.id]={a:0,g:0}; });
+  SKILLS.forEach(function(s){ S.skills[s.id]={a:0,g:0}; });
+  bindInputs();
+  loadLocal();
+  if(!num(el('f-pz').value,0)) el('f-pz').value=pzMax();
+  if(!num(el('f-pr').value,0)) el('f-pr').value=prMax();
+  refresh();
+  showMainTab('karta');
+  initFirebase(); setupPWA();
+}
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "REIATSU 100 — Karta Postaci",
+  "short_name": "REIATSU",
+  "description": "Karta postaci do tekstowego RPG REIATSU 100 (świat Bleach)",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05070a",
+  "theme_color": "#3ba8cf",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "id": "reiatsu-100-karta"
+}
