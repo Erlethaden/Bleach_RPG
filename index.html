@@ -177,6 +177,7 @@ button,input,select,textarea{font-family:'JetBrains Mono',monospace}
 
 /* GM */
 #gm-section{display:none;padding:10px;max-width:1140px;margin:0 auto}
+#adm-section{display:none;padding:10px;max-width:1140px;margin:0 auto}
 .adm-tbl{width:100%;border-collapse:collapse;font-size:10px}
 .adm-tbl th{text-align:left;font-size:8px;letter-spacing:1px;color:var(--t0);border-bottom:1px solid var(--bd2);padding:5px 6px;font-weight:400}
 .adm-tbl td{border-bottom:1px solid var(--bd1);padding:6px;color:var(--t2);vertical-align:middle}
@@ -496,7 +497,7 @@ button,input,select,textarea{font-family:'JetBrains Mono',monospace}
   </div>
 </section>
 
-<section id="adm-section" style="display:none">
+<section id="adm-section">
   <div class="gm-tabs">
     <button class="gm-tab active" onclick="showAdmTab('users')">UŻYTKOWNICY <span id="adm-cu"></span></button>
     <button class="gm-tab" onclick="showAdmTab('chars')">POSTACIE <span id="adm-cc"></span></button>
@@ -1168,9 +1169,9 @@ function applyRole(){
   el('tbtn-adm').style.display = userRole.admin?'':'none';
 }
 function showMainTab(name){
-  el('karta-section').style.display = name==='karta'?'':'none';
-  el('gm-section').style.display    = name==='gm'?'':'none';
-  el('adm-section').style.display   = name==='adm'?'':'none';
+  el('karta-section').style.display = name==='karta'?'block':'none';
+  el('gm-section').style.display    = name==='gm'?'block':'none';
+  el('adm-section').style.display   = name==='adm'?'block':'none';
   ['karta','gm','adm'].forEach(function(t){ var b=el('tbtn-'+t); if(b) b.classList.toggle('active',t===name); });
   if(name==='gm'){ gmLoadRoster(); cmbSubscribe(); }
   if(name==='adm'){ admLoad(); }
@@ -1277,7 +1278,7 @@ function cloudSave(){
       currentCharId = fbDB.collection('users').doc(fbUser.uid).collection('characters').doc().id;
       isNewChar=false;
     }
-    var charId=currentCharId, oldSlug=currentSlug;
+    var charId=currentCharId, oldSlug=currentSlug, wasNew=!knownChar(charId);
     cloudStatus('zapis...','a');
     claimName(slug,charId).then(function(){
       currentSlug=slug;
@@ -1291,6 +1292,9 @@ function cloudSave(){
     }).then(function(){
       cloudStatus('zsynchronizowano','g');
       var known=charCache.filter(function(c){return c.id===charId;})[0];
+      if(wasNew)                              writeLog('char_create',{charId:charId, imie:name});
+      else if(oldSlug && oldSlug!==slug)      writeLog('char_rename',{charId:charId, imie:name, poprzednie:oldSlug});
+      else                                    logEdit(charId, name);
       if(!known || known.imie!==name) loadCharList();
     }).catch(function(e){
       if(e.message==='TAKEN'){ cloudStatus('imię „'+name+'" jest już zajęte','r'); alert('Postać o tym imieniu już istnieje (u innego gracza). Wybierz inne imię — to blokada przed duplikatami.'); }
@@ -1314,6 +1318,15 @@ function writeRoster(charId,name,data){
     lastModified:firebase.firestore.FieldValue.serverTimestamp(),
     charData:data
   });
+}
+function knownChar(id){ return charCache.some(function(c){ return c.id===id; }); }
+/* modyfikacje: jeden wpis na 10 minut na kartę — inaczej autozapis zalałby logi */
+var lastEditLog = {};
+function logEdit(charId, imie){
+  var now = Date.now();
+  if(lastEditLog[charId] && now - lastEditLog[charId] < 600000) return;
+  lastEditLog[charId] = now;
+  writeLog('char_edit',{charId:charId, imie:imie});
 }
 function writeLog(action,details){
   if(!fbUser||!fbDB) return;
@@ -1693,13 +1706,15 @@ function admRenderChars(){
   el('adm-chars').innerHTML = h;
 }
 
+var LOG_LABEL = { login:'zalogowanie', 'char_create':'nowa postać', 'char_edit':'zmiana karty',
+                  'char_rename':'zmiana imienia', 'delete':'skasowanie postaci' };
 function admRenderLogs(){
   el('adm-cl').textContent='('+ADM.logs.length+')';
   var h='';
   ADM.logs.forEach(function(l){
     var t = l.timestamp && l.timestamp.toDate ? l.timestamp.toDate().toLocaleString('pl-PL') : '—';
     var d = l.details && Object.keys(l.details).length ? ' · '+escHtml(JSON.stringify(l.details)) : '';
-    h+='<div class="adm-log"><span style="color:var(--t0)">'+escHtml(t)+'</span> · <span style="color:var(--c3)">'+escHtml(l.nick||'?')+'</span> · '+escHtml(l.action||'')+d+'</div>';
+    h+='<div class="adm-log"><span style="color:var(--t0)">'+escHtml(t)+'</span> · <span style="color:var(--c3)">'+escHtml(l.nick||'?')+'</span> · '+escHtml(LOG_LABEL[l.action]||l.action||'')+d+'</div>';
   });
   el('adm-logs').innerHTML = h || '<div class="empty">Brak logów.</div>';
 }
