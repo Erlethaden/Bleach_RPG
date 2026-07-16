@@ -1342,6 +1342,21 @@ function showGmTab(n){
   ['roster','walka'].forEach(function(t){ el('gmp-'+t).classList.toggle('on',t===n); });
   document.querySelectorAll('.gm-tab').forEach(function(b,i){ b.classList.toggle('active', ['roster','walka'][i]===n); });
 }
+function bar(l,v,m){
+  v=num(v,0); m=num(m,0);
+  var p=m?Math.max(0,Math.min(100,Math.round(v/m*100))):0;
+  var c=p>50?'var(--c2)':p>25?'var(--a2)':'var(--r2)';
+  return '<div class="gm-stat"><span class="gm-stat-l">'+l+'</span><span class="gm-stat-v">'+v+'/'+m+'</span>'+
+         '<div class="gm-bar"><div class="gm-bar-f" style="width:'+p+'%;background:'+c+'"></div></div></div>';
+}
+function timeAgo(ts){
+  if(!ts||!ts.seconds) return 'przed chwilą';
+  var s=Math.round(Date.now()/1000-ts.seconds);
+  if(s<60) return s+' s temu';
+  if(s<3600) return Math.round(s/60)+' min temu';
+  if(s<86400) return Math.round(s/3600)+' h temu';
+  return Math.round(s/86400)+' dni temu';
+}
 var gmUnsub=null;
 function gmRender(){
   el('gm-count').textContent='('+gmRoster.length+')';
@@ -1379,7 +1394,8 @@ function gmLoadRoster(force){
   if(gmUnsub){ gmUnsub(); gmUnsub=null; }
   el('gm-live').textContent='podgląd żywy · dane spływają przy każdym zapisie karty';
   gmUnsub = fbDB.collection('roster').onSnapshot(function(snap){
-    gmSetRoster(snap.docs);
+    try { gmSetRoster(snap.docs); }
+    catch(err){ el('gm-empty').style.display='block'; el('gm-empty').textContent='Błąd wyświetlania drużyny: '+err.message; return; }
     if(!snap.size) el('gm-empty').textContent='Brak kart w chmurze. Gracz musi zapisać postać z imieniem — wtedy pojawi się tu sama, bez odświeżania.';
   }, function(e){ gmError(e); });
 }
@@ -1689,7 +1705,8 @@ function admLoad(){
     ADM.chars = r[2].docs.map(function(d0){ var o=d0.data(); o.id=d0.id; return o; });
     ADM.names = r[3].docs.map(function(d0){ var o=d0.data(); o.slug=d0.id; return o; });
     ADM.logs  = r[4].docs.map(function(d0){ var o=d0.data(); o.id=d0.id; return o; });
-    admRenderUsers(); admRenderChars(); admRenderLogs();
+    try { admRenderUsers(); admRenderChars(); admRenderLogs(); }
+    catch(err){ admStatus('Błąd wyświetlania: '+err.message); return; }
     admStatus(ADM.users.length+' kont · '+ADM.chars.length+' kart · '+ADM.names.length+' rezerwacji · '+ADM.logs.length+' logów');
   }).catch(function(e){ admStatus('Błąd odczytu: '+(e.code||e.message)); });
 }
