@@ -475,6 +475,7 @@ button,input,select,textarea{font-family:'JetBrains Mono',monospace}
       <button class="btn btn-sm" onclick="gmLoadRoster(true)">Odśwież</button>
       <button class="btn btn-sm btn-dim" onclick="gmAddAllToCombat()">Dodaj wszystkich do kolejki</button>
       <button class="btn btn-sm btn-dim" onclick="gmRebuildOwn()" title="wypycha do drużyny wpisy z Twoich własnych kart">Odbuduj z moich kart</button>
+      <button class="btn btn-sm btn-amber" onclick="gmDiag()">Diagnostyka</button>
       <span style="font-size:9px;color:var(--t0)" id="gm-live">podgląd żywy · dane spływają przy każdym zapisie karty</span>
     </div>
     <div class="gm-grid" id="gm-roster-grid"></div>
@@ -596,6 +597,7 @@ var FIREBASE_CONFIG = {
 /* UID właściciela (pierwszy MG/admin). Zobaczysz go w Firebase → Authentication → Users. */
 var ADMIN_UID = 'yKpSR0Ar1zbAmHedbTuyeA3QvE93';
 var MAX_CHARS = 5;              /* limit postaci na konto — anty-duchy */
+var BUILD = '2026-07-16 · b8';
 var SAVE_KEY  = 'reiatsu100-v1';
 
 /* ─── stałe systemu ─────────────────────────────────── */
@@ -1400,6 +1402,28 @@ function gmLoadRoster(force){
   }, function(e){ gmError(e); });
 }
 /* awaryjnie: wypchnij do drużyny wpisy ze swoich własnych kart */
+function gmDiag(){
+  var out = ['BUILD: '+BUILD];
+  out.push('Zalogowany: '+(fbUser?fbUser.uid:'NIE'));
+  out.push('ADMIN_UID w pliku: '+ADMIN_UID);
+  out.push('Rola: gm='+userRole.gm+' admin='+userRole.admin);
+  out.push('Nasłuch drużyny: '+(gmUnsub?'aktywny':'BRAK'));
+  out.push('Kafelków w pamięci: '+gmRoster.length);
+  if(!fbDB){ alert(out.join('\n')+'\n\nFirestore nie wystartował.'); return; }
+  fbDB.collection('roster').get().then(function(q){
+    out.push('roster (odczyt bezpośredni): '+q.size+' dokumentów');
+    q.forEach(function(d0){ out.push('  · '+(d0.data().imie||'?')+'  [uid '+(d0.data().uid||'?').substring(0,8)+'…]'); });
+    return fbDB.collection('users').doc(fbUser.uid).collection('characters').get();
+  }).then(function(q){
+    out.push('Twoje karty: '+q.size);
+    alert(out.join('\n'));
+  }).catch(function(e){
+    out.push('BŁĄD: '+(e.code||e.message));
+    if(String(e.code).indexOf('permission')>=0)
+      out.push('→ Reguły Firestore blokują odczyt. Sprawdź, czy w opublikowanych regułach ownerUid() to Twoje UID.');
+    alert(out.join('\n'));
+  });
+}
 function gmRebuildOwn(){
   if(!fbDB||!fbUser) return;
   el('gm-live').textContent='odbudowuję…';
@@ -1915,6 +1939,7 @@ function boot(){
   refresh();
   showMainTab('karta');
   initFirebase(); setupPWA();
+  var n=el('setup-note'); if(n && !n.textContent) { n.textContent='build '+BUILD; n.style.display='block'; n.style.color='var(--t0)'; }
 }
 document.addEventListener('DOMContentLoaded', boot);
 </script>
