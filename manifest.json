@@ -1,16 +1,21 @@
 {
   "name": "REIATSU 100 — Karta Postaci",
   "short_name": "REIATSU",
-  "description": "Karta postaci do tekstowego RPG REIATSU 100 (świat Bleach)",
+  "description": "Karta postaci i panel MG do REIATSU 100 (tekstowy RPG w świecie Bleach)",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#05070a",
+  "background_color": "#07090d",
   "theme_color": "#3ba8cf",
+  "lang": "pl",
+  "categories": ["games", "utilities"],
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
   ],
   "id": "reiatsu-100-karta"
 }
