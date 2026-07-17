@@ -63,6 +63,28 @@ button,input,select,textarea{font-family:'JetBrains Mono',monospace}
 /* SHEET */
 .page-wrap{padding:10px}
 #sheet{background:var(--bg);border:1px solid var(--bd2);max-width:1140px;margin:0 auto;padding:12px}
+.gm-por{width:42px;height:42px;object-fit:cover;border:1px solid var(--bd3);border-radius:2px;float:right;margin:0 0 4px 6px}
+.gd-por{width:110px;height:110px;object-fit:cover;border:1px solid var(--bd3);border-radius:2px;float:right;margin:0 0 6px 8px}
+.portrait-wrap{width:104px;height:104px;flex-shrink:0;border:2px solid var(--bd3);position:relative;cursor:pointer;overflow:hidden;background:var(--bg2);border-radius:2px;transition:border-color .2s}
+.portrait-wrap:hover{border-color:var(--c2)}
+.portrait-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.portrait-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--t0)}
+.portrait-placeholder b{font-family:'Shippori Mincho',serif;font-size:24px;color:var(--bd3);font-weight:800;line-height:1}
+.portrait-placeholder span{font-size:8px;letter-spacing:1px;text-align:center;padding:0 4px}
+.portrait-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.75);border:none;color:var(--r3);font-size:11px;cursor:pointer;padding:2px 6px;display:none;font-family:inherit;border-radius:2px}
+.portrait-wrap:hover .portrait-del,.portrait-wrap:focus-within .portrait-del{display:block}
+#crop-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:300;align-items:center;justify-content:center;padding:10px}
+#crop-ov.open{display:flex}
+#crop-box{background:var(--bg2);border:1px solid var(--c1);padding:14px;width:340px;max-width:96vw}
+#crop-title{font-size:11px;color:var(--c3);letter-spacing:2px;margin-bottom:10px}
+#crop-wrap{position:relative;width:300px;height:300px;max-width:100%;overflow:hidden;cursor:grab;background:#000;margin:0 auto;user-select:none;touch-action:none}
+#crop-wrap:active{cursor:grabbing}
+#crop-canvas{position:absolute;top:0;left:0;touch-action:none}
+#crop-mask{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 9999px rgba(0,0,0,.5);border:2px solid var(--c2)}
+#crop-hint{font-size:9px;color:var(--t0);text-align:center;margin:8px 0 10px;letter-spacing:.5px;line-height:1.5}
+#crop-zoom{display:flex;gap:6px;justify-content:center;margin-bottom:8px}
+#crop-zoom button{width:40px;height:32px;font-size:15px;border:1px solid var(--bd3);background:var(--bg3);color:var(--t2);cursor:pointer;border-radius:2px}
+.crop-btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .sh-header{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--bd2);padding-bottom:10px;margin-bottom:12px;flex-wrap:wrap}
 .brand{flex-shrink:0;text-align:center}
 .brand-kanji{font-family:'Shippori Mincho',serif;font-size:30px;color:var(--c2);line-height:1;font-weight:800}
@@ -252,6 +274,7 @@ button,input,select,textarea{font-family:'JetBrains Mono',monospace}
   .grid2,.grid3{grid-template-columns:1fr}
   .id-fields{grid-template-columns:1fr}
   #sheet{padding:9px}
+  .portrait-wrap{width:84px;height:84px}
   .page-wrap{padding:6px}
   .brand{display:flex;align-items:center;gap:8px;text-align:left}
   .brand-name{margin-top:0}
@@ -297,6 +320,12 @@ button,input,select,textarea{font-family:'JetBrains Mono',monospace}
       <div class="brand-kanji">霊圧</div>
       <div><div class="brand-name">REIATSU</div><div class="brand-sub">GOTEI 13 · KARTA</div></div>
     </div>
+    <div class="portrait-wrap" id="portrait-wrap" onclick="portraitClick()" title="Kliknij, żeby wstawić portret">
+      <div class="portrait-placeholder" id="portrait-ph"><b>影</b><span>PORTRET</span></div>
+      <img id="portrait-img" src="" alt="" style="display:none">
+      <button class="portrait-del" onclick="deletePortrait(event)" title="Usuń portret">✕</button>
+    </div>
+    <input type="file" id="portrait-input" accept="image/*" style="display:none" onchange="handlePortraitFile(this)">
     <div class="id-fields">
       <div class="idrow"><label>Imię</label><input id="f-imie" maxlength="32" placeholder="imię i nazwisko"></div>
       <div class="idrow"><label>Dywizja</label><select id="f-dywizja"></select></div>
@@ -544,6 +573,22 @@ button,input,select,textarea{font-family:'JetBrains Mono',monospace}
     <input class="mod-in" id="nick-input" maxlength="24" placeholder="2–24 znaki">
     <div class="err" id="nick-error"></div>
     <div class="mod-btns"><button class="btn" onclick="saveNick()">Zapisz nick</button></div>
+  </div>
+</div>
+
+<div id="crop-ov">
+  <div id="crop-box">
+    <div id="crop-title">KADR PORTRETU</div>
+    <div id="crop-wrap"><canvas id="crop-canvas"></canvas><div id="crop-mask"></div></div>
+    <div id="crop-hint">Przeciągnij palcem lub myszą, żeby ustawić kadr.<br>Zoom: dwa palce, kółko myszy albo przyciski poniżej.</div>
+    <div id="crop-zoom">
+      <button type="button" onclick="cropZoom(0.85)">−</button>
+      <button type="button" onclick="cropZoom(1.18)">+</button>
+    </div>
+    <div class="crop-btns">
+      <button class="btn btn-sm btn-dim" onclick="closeCrop()">Anuluj</button>
+      <button class="btn btn-sm" onclick="applyCrop()">Wstaw portret</button>
+    </div>
   </div>
 </div>
 
@@ -1032,6 +1077,7 @@ function collectData(){
                         d0.sp.push({n:el('sp'+k+'n').value||'', x:el('sp'+k+'x').value||''}); }
   TXT_FIELDS.forEach(function(f){ var e=el(f); if(e) d0[f]=e.value; });
   d0.gotowa = locked();
+  d0.portret = getPortrait();
   return d0;
 }
 function applyData(d0){
@@ -1045,6 +1091,7 @@ function applyData(d0){
   SKILLS.forEach(function(s){ var x=(d0.skills||{})[s.id]||{}; S.skills[s.id]={a:num(x.a),g:num(x.g)}; });
   TXT_FIELDS.forEach(function(f){ var e=el(f); if(e && d0[f]!==undefined) e.value=d0[f]; });
   el('f-gotowa').checked = !!d0.gotowa;
+  setPortrait(d0.portret||'');
   el('typ-custom').style.display   = el('f-zan-typ').value==='custom'?'block':'none';
   el('forma-custom').style.display = el('f-zan-forma').value==='custom'?'block':'none';
   for(var k=0;k<4;k++){
@@ -1073,7 +1120,7 @@ function resetSheet(){
   ATTRS.forEach(function(a){ S.attrs[a.id]=8; });
   ARTS.forEach(function(a){ S.arts[a.id]={a:0,g:0}; });
   SKILLS.forEach(function(s){ S.skills[s.id]={a:0,g:0}; });
-  S.techs={}; S.spells={}; el('f-gotowa').checked=false;
+  S.techs={}; S.spells={}; el('f-gotowa').checked=false; setPortrait('');
   TXT_FIELDS.forEach(function(f){ var e=el(f); if(!e) return;
     if(e.tagName==='SELECT') e.selectedIndex=0; else e.value=(f==='f-pd'||f==='f-pdw'||f==='f-pz'||f==='f-pr'||f==='f-wycz'||f==='f-dr-manual')?'0':'';
   });
@@ -1082,6 +1129,103 @@ function resetSheet(){
   refresh();
 }
 function confirmReset(){ if(confirm('Wyczyścić kartę na ekranie? (postać w chmurze zostaje)')) resetSheet(); }
+/* ═══════════ PORTRET ═══════════ */
+var cropImg=null, cropX=0, cropY=0, cropScale=1, cropDrag=null, lastTD=null;
+var PORTRAIT_SIZE=384, CROP_D=300;
+
+function portraitClick(){ el('portrait-input').click(); }
+function handlePortraitFile(inp){
+  var f=inp.files && inp.files[0]; inp.value='';
+  if(!f || f.type.indexOf('image/')!==0) return;
+  var img=new Image(), url=URL.createObjectURL(f);
+  img.onload=function(){
+    URL.revokeObjectURL(url);
+    cropImg=img;
+    var short=Math.min(img.width,img.height);
+    cropScale=CROP_D/short;
+    cropX=(CROP_D-img.width*cropScale)/2;
+    cropY=(CROP_D-img.height*cropScale)/2;
+    openCrop();
+  };
+  img.onerror=function(){ flash('nie umiem otworzyć tego pliku'); };
+  img.src=url;
+}
+function openCrop(){
+  var c=el('crop-canvas'); c.width=CROP_D; c.height=CROP_D;
+  drawCrop(); el('crop-ov').classList.add('open');
+  document.body.style.overflow='hidden'; bindCrop();
+}
+function closeCrop(){
+  el('crop-ov').classList.remove('open');
+  document.body.style.overflow=''; unbindCrop(); cropImg=null;
+}
+function drawCrop(){
+  var ctx=el('crop-canvas').getContext('2d');
+  ctx.clearRect(0,0,CROP_D,CROP_D);
+  if(cropImg) ctx.drawImage(cropImg, cropX, cropY, cropImg.width*cropScale, cropImg.height*cropScale);
+}
+function cropZoom(d){ var c=CROP_D/2; cropX=c+(cropX-c)*d; cropY=c+(cropY-c)*d; cropScale*=d; drawCrop(); }
+function applyCrop(){
+  var r=PORTRAIT_SIZE/CROP_D, out=document.createElement('canvas');
+  out.width=PORTRAIT_SIZE; out.height=PORTRAIT_SIZE;
+  var ctx=out.getContext('2d');
+  ctx.fillStyle='#07090d'; ctx.fillRect(0,0,PORTRAIT_SIZE,PORTRAIT_SIZE);
+  ctx.drawImage(cropImg, cropX*r, cropY*r, cropImg.width*cropScale*r, cropImg.height*cropScale*r);
+  setPortrait(out.toDataURL('image/jpeg',0.75));
+  closeCrop(); markDirty(); saveLocal(); flash('portret wstawiony');
+}
+function setPortrait(b64){
+  var img=el('portrait-img');
+  if(b64){ img.src=b64; img.style.display=''; el('portrait-ph').style.display='none'; }
+  else   { img.src='';  img.style.display='none'; el('portrait-ph').style.display=''; }
+}
+function getPortrait(){ var i=el('portrait-img'); return i.style.display==='none' ? '' : (i.src||''); }
+function deletePortrait(e){
+  e.stopPropagation();
+  if(!confirm('Usunąć portret?')) return;
+  setPortrait(''); markDirty(); saveLocal();
+}
+/* obsługa myszy i dotyku — kadrowanie na telefonie to podstawa */
+function cropPos(e){ var r=el('crop-wrap').getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; }
+function cropMD(e){ var p=cropPos(e); cropDrag={x:p.x-cropX, y:p.y-cropY}; }
+function cropMM(e){ if(!cropDrag) return; var p=cropPos(e); cropX=p.x-cropDrag.x; cropY=p.y-cropDrag.y; drawCrop(); }
+function cropMU(){ cropDrag=null; }
+function cropWh(e){ e.preventDefault(); cropZoom(e.deltaY>0?0.9:1.1); }
+function cropTS(e){
+  e.preventDefault();
+  var r=el('crop-wrap').getBoundingClientRect();
+  if(e.touches.length===1){ cropDrag={x:e.touches[0].clientX-r.left-cropX, y:e.touches[0].clientY-r.top-cropY}; lastTD=null; }
+  else if(e.touches.length===2){ lastTD=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); }
+}
+function cropTM(e){
+  e.preventDefault();
+  var r=el('crop-wrap').getBoundingClientRect();
+  if(e.touches.length===1 && cropDrag){
+    cropX=e.touches[0].clientX-r.left-cropDrag.x; cropY=e.touches[0].clientY-r.top-cropDrag.y; drawCrop();
+  } else if(e.touches.length===2 && lastTD){
+    var d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    cropZoom(d/lastTD); lastTD=d;
+  }
+}
+function cropTE(){ cropDrag=null; lastTD=null; }
+function bindCrop(){
+  var w=el('crop-wrap');
+  w.addEventListener('mousedown',cropMD); w.addEventListener('mousemove',cropMM);
+  w.addEventListener('mouseup',cropMU); w.addEventListener('mouseleave',cropMU);
+  w.addEventListener('wheel',cropWh,{passive:false});
+  w.addEventListener('touchstart',cropTS,{passive:false});
+  w.addEventListener('touchmove',cropTM,{passive:false});
+  w.addEventListener('touchend',cropTE);
+}
+function unbindCrop(){
+  var w=el('crop-wrap');
+  w.removeEventListener('mousedown',cropMD); w.removeEventListener('mousemove',cropMM);
+  w.removeEventListener('mouseup',cropMU); w.removeEventListener('mouseleave',cropMU);
+  w.removeEventListener('wheel',cropWh);
+  w.removeEventListener('touchstart',cropTS); w.removeEventListener('touchmove',cropTM);
+  w.removeEventListener('touchend',cropTE);
+}
+
 /* ═══════════ EKSPORT: PNG i tekst na Discorda ═══════════ */
 function fld(id){ return (el(id) && el(id).value || '').trim(); }
 
@@ -1517,6 +1661,7 @@ function gmRender(){
     var card=document.createElement('div'); card.className='gm-card';
     card.onclick=function(){ gmDetail(c.id); };
     card.innerHTML=
+      (c.charData && c.charData.portret ? '<img class="gm-por" src="'+c.charData.portret+'" alt="">' : '')+
       '<div class="gm-card-name">'+escHtml(c.imie||'???')+' <span class="tier-chip">tier '+(c.tierEf||0)+'</span></div>'+
       '<div class="gm-card-sub">'+escHtml(c.dywizja?c.dywizja+'. dywizja':'—')+' · '+escHtml(c.ranga||'')+(c.nick?' · '+escHtml(c.nick):'')+'</div>'+
       bar('PŻ',c.pz,c.pzMax)+bar('PR',c.pr,c.prMax)+
@@ -1607,6 +1752,7 @@ function gmDetail(id){
 
   el('gd-title').textContent=(c.imie||'???')+(d0.gotowa?'':'  · w budowie');
   var h='';
+  if(d0.portret) h+='<img class="gd-por" src="'+d0.portret+'" alt="">';
   h+='<div class="gd-sec">KIM JEST</div>';
   h+=gdRow('Gracz', escHtml(c.nick||'—'));
   h+=gdRow('Dywizja', escHtml(DIVISIONS[num(d0['f-dywizja'],1)-1]||'—'));
