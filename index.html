@@ -178,6 +178,7 @@ button,input,select,textarea{font-family:'JetBrains Mono',monospace}
 /* GM */
 #gm-section{display:none;padding:10px;max-width:1140px;margin:0 auto}
 #adm-section{display:none;padding:10px;max-width:1140px;margin:0 auto}
+.xhide{visibility:hidden !important}
 .adm-tbl{width:100%;border-collapse:collapse;font-size:10px}
 .adm-tbl th{text-align:left;font-size:8px;letter-spacing:1px;color:var(--t0);border-bottom:1px solid var(--bd2);padding:5px 6px;font-weight:400}
 .adm-tbl td{border-bottom:1px solid var(--bd1);padding:6px;color:var(--t2);vertical-align:middle}
@@ -455,7 +456,9 @@ button,input,select,textarea{font-family:'JetBrains Mono',monospace}
     </div>
   </div>
 
-  <div class="sec" style="display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--bd1);padding-top:10px">
+  <div class="sec" id="sheet-tools" style="display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--bd1);padding-top:10px">
+    <button class="btn btn-sm" onclick="exportPNG()">Obrazek PNG</button>
+    <button class="btn btn-sm" onclick="openDiscord()">Tekst na Discord</button>
     <button class="btn btn-sm btn-dim" onclick="openExport()">Eksport kodu</button>
     <button class="btn btn-sm btn-dim" onclick="openImport()">Import kodu</button>
     <button class="btn btn-sm btn-red" onclick="confirmReset()">Wyczyść kartę</button>
@@ -551,6 +554,8 @@ button,input,select,textarea{font-family:'JetBrains Mono',monospace}
     <div class="err" id="modal-status" style="color:var(--t1)"></div>
     <div class="mod-btns">
       <button class="btn btn-sm btn-dim" id="modal-copy" onclick="copyModal()">Kopiuj</button>
+      <button class="btn btn-sm btn-dim" id="modal-next" onclick="nextChunk()" style="display:none">Następna część</button>
+      <button class="btn btn-sm btn-dim" id="modal-share" onclick="shareModal()" style="display:none">Udostępnij</button>
       <button class="btn btn-sm" id="modal-import" onclick="doImport()">Wczytaj</button>
       <button class="btn btn-sm btn-dim" onclick="closeModal()">Zamknij</button>
     </div>
@@ -1077,12 +1082,156 @@ function resetSheet(){
   refresh();
 }
 function confirmReset(){ if(confirm('Wyczyścić kartę na ekranie? (postać w chmurze zostaje)')) resetSheet(); }
+/* ═══════════ EKSPORT: PNG i tekst na Discorda ═══════════ */
+function fld(id){ return (el(id) && el(id).value || '').trim(); }
+
+function buildDiscord(){
+  var L=[];
+  var imie = fld('f-imie') || 'Bez imienia';
+  var rel  = relState()==='bankai'?'Bankai':relState()==='shikai'?'Shikai':'zapieczętowane';
+  L.push('**'+imie+'** — '+(fld('f-dywizja')?fld('f-dywizja')+'. dywizja':'brak dywizji')+' · '+(fld('f-ranga')||'bez rangi'));
+  L.push('tier '+num(fld('f-tier'),0)+' (efektywny '+tierEff()+', '+rel+')'+
+         ' · PD wolne '+num(fld('f-pd'),0)+' / wydane '+num(fld('f-pdw'),0)+' / łącznie '+(num(fld('f-pd'),0)+num(fld('f-pdw'),0)));
+  L.push('PŻ '+num(fld('f-pz'),0)+'/'+pzMax()+' · PR '+num(fld('f-pr'),0)+'/'+prMax()+
+         ' · DR '+drTotal()+' · Wyczerpanie '+num(fld('f-wycz'),0)+
+         ' · REF '+attr('ref')+' · obrażenia +'+Math.floor(attr('sil')/5)+' · umieranie '+Math.ceil(attr('krz')/2)+' rund');
+  L.push('');
+  L.push('**Atrybuty:** '+ATTRS.map(function(a){ return a.ab+' '+attr(a.id); }).join(' · '));
+  L.push('');
+  L.push('**Cztery sztuki**');
+  ARTS.forEach(function(a){ var v=artVal(a.id); L.push('· '+a.n+' **'+v+'%** (krytyk ≤ '+crit(v,a.id)+')'); });
+  L.push('');
+  L.push('**Umiejętności**');
+  SKILLS.forEach(function(x){ var v=skillVal(x.id); L.push('· '+x.n+' **'+v+'%** (kr. '+crit(v)+')'); });
+  for(var k=0;k<4;k++){ var n=fld('cs'+k+'n'); if(n){ var v=num(fld('cs'+k+'v'),0); L.push('· '+n+' **'+v+'%** (kr. '+Math.max(1,Math.ceil(v/10))+')'); } }
+  var tk=Object.keys(S.techs||{});
+  if(tk.length){
+    L.push(''); L.push('**Techniki** (pasywne)');
+    tk.forEach(function(id){ var t=TECHS.filter(function(x){return x.id===id;})[0]; if(t) L.push('· **'+t.n+'** — '+t.d); });
+  }
+  var sp=Object.keys(S.spells||{});
+  if(sp.length){
+    L.push(''); L.push('**Zaklęcia**');
+    sp.sort(function(a,b){ return num(a.substring(1))-num(b.substring(1)); }).forEach(function(k){
+      var nr=num(k.substring(1)), hado=k[0]==='H';
+      var r=(hado?HADO:BAKUDO).filter(function(x){return x[0]===nr;})[0];
+      if(r) L.push('· '+(hado?'Hadō #':'Bakudō #')+nr+' **'+r[1]+'** ('+r[2]+' PR) — '+r[3]);
+    });
+  }
+  for(var k2=0;k2<4;k2++){ var sn=fld('sp'+k2+'n'); if(sn) L.push('· autorskie: **'+sn+'** — '+fld('sp'+k2+'x')); }
+  if(fld('f-zan-imie') || el('f-zan-typ').value){
+    L.push(''); L.push('**Zanpakutō**');
+    L.push('· Imię: '+(fld('f-zan-imie')||'jeszcze nieznane')+(fld('f-zan-kom')?'  · komenda: „'+fld('f-zan-kom')+'"':''));
+    var tn = el('f-zan-typ').value==='custom' ? (fld('f-zan-typ-x')||'własny')+' (jak '+el('f-zan-typ-b').value+')' : el('f-zan-typ').value;
+    var fn = el('f-zan-forma').value==='custom' ? (fld('f-zan-forma-x')||'własna')+' (jak '+el('f-zan-forma-b').value+')' : el('f-zan-forma').value;
+    L.push('· Typ: '+tn+'  ·  Forma: '+fn);
+    if(fld('f-zan-pas'))    L.push('· Pasywka: '+fld('f-zan-pas'));
+    if(fld('f-zan-akt'))    L.push('· Aktywka: '+fld('f-zan-akt'));
+    if(fld('f-zan-bankai')) L.push('· Bankai: '+fld('f-zan-bankai'));
+  }
+  if(fld('f-rany')){    L.push(''); L.push('**Trwałe rany**'); L.push(fld('f-rany')); }
+  if(fld('f-notatki')){ L.push(''); L.push('**Notatki**');     L.push(fld('f-notatki')); }
+  return L.join('\n');
+}
+
+var MOD_CHUNKS=[], MOD_I=0;
+function chunkText(t, max){
+  var lines=t.split('\n'), out=[], cur='';
+  lines.forEach(function(l){
+    if((cur+l+'\n').length > max){ if(cur) out.push(cur.replace(/\n+$/,'')); cur=''; }
+    cur += l+'\n';
+  });
+  if(cur.trim()) out.push(cur.replace(/\n+$/,''));
+  return out.length?out:[t];
+}
+function showChunk(){
+  el('modal-ta').value = MOD_CHUNKS[MOD_I];
+  el('modal-next').style.display = MOD_CHUNKS.length>1 ? '' : 'none';
+  el('modal-next').textContent = 'Część '+((MOD_I+1)%MOD_CHUNKS.length+1)+'/'+MOD_CHUNKS.length;
+  el('modal-status').textContent = MOD_CHUNKS.length>1
+    ? 'Część '+(MOD_I+1)+'/'+MOD_CHUNKS.length+' · '+MOD_CHUNKS[MOD_I].length+' znaków — Discord przyjmuje 2000 na wiadomość.'
+    : MOD_CHUNKS[MOD_I].length+' znaków — mieści się w jednej wiadomości.';
+}
+function nextChunk(){ MOD_I=(MOD_I+1)%MOD_CHUNKS.length; showChunk(); }
+function openDiscord(){
+  MOD_CHUNKS = chunkText(buildDiscord(), 1900); MOD_I = 0;
+  el('modal-title').textContent='TEKST NA DISCORD';
+  el('modal-copy').style.display=''; el('modal-import').style.display='none';
+  el('modal-share').style.display = (navigator.share ? '' : 'none');
+  showChunk();
+  el('modal').classList.add('open');
+}
+function shareModal(){
+  if(!navigator.share) return;
+  navigator.share({ text: el('modal-ta').value }).catch(function(){});
+}
+
+/* ─── PNG ─── */
+function exportPNG(){
+  var msg=el('save-msg');
+  function go(){
+    var node=el('karta-section'), tools=el('sheet-tools');
+    tools.classList.add('xhide');
+    msg.textContent='robię zrzut…';
+    window.html2canvas(node, {
+      backgroundColor:'#07090d',
+      scale: Math.min(2, window.devicePixelRatio||1),
+      useCORS:true, logging:false,
+      windowWidth: node.scrollWidth
+    }).then(function(canvas){
+      tools.classList.remove('xhide');
+      canvas.toBlob(function(blob){
+        if(!blob){ msg.textContent='zrzut się nie udał'; return; }
+        var name=(slugify(fld('f-imie'))||'karta')+'-reiatsu100.png';
+        var file=null;
+        try{ file=new File([blob],name,{type:'image/png'}); }catch(e){}
+        if(file && navigator.canShare && navigator.canShare({files:[file]})){
+          navigator.share({ files:[file], title:fld('f-imie')||'Karta postaci' })
+            .then(function(){ msg.textContent='wysłane'; })
+            .catch(function(){ dl(blob,name); });
+        } else dl(blob,name);
+      },'image/png');
+    }).catch(function(e){
+      tools.classList.remove('xhide');
+      msg.textContent='zrzut się nie udał: '+e.message;
+    });
+    function dl(blob,name){
+      var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); },4000);
+      msg.textContent='zapisano '+name;
+    }
+  }
+  if(window.html2canvas){ go(); return; }
+  msg.textContent='wczytuję generator obrazka…';
+  var sc=document.createElement('script');
+  sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  sc.onload=go;
+  sc.onerror=function(){ msg.textContent='nie udało się pobrać generatora — potrzebny internet'; };
+  document.head.appendChild(sc);
+}
+
 function openExport(){ el('modal-title').textContent='EKSPORT KODU'; el('modal-ta').value=btoa(unescape(encodeURIComponent(JSON.stringify(collectData()))));
-  el('modal-copy').style.display=''; el('modal-import').style.display='none'; el('modal-status').textContent='Skopiuj i zachowaj jako backup.'; el('modal').classList.add('open'); }
+  el('modal-copy').style.display=''; el('modal-import').style.display='none'; el('modal-next').style.display='none'; el('modal-share').style.display='none'; el('modal-status').textContent='Skopiuj i zachowaj jako backup.'; el('modal').classList.add('open'); }
 function openImport(){ el('modal-title').textContent='IMPORT KODU'; el('modal-ta').value='';
-  el('modal-copy').style.display='none'; el('modal-import').style.display=''; el('modal-status').textContent='Wklej kod z eksportu.'; el('modal').classList.add('open'); }
+  el('modal-copy').style.display='none'; el('modal-import').style.display=''; el('modal-next').style.display='none'; el('modal-share').style.display='none'; el('modal-status').textContent='Wklej kod z eksportu.'; el('modal').classList.add('open'); }
 function closeModal(){ el('modal').classList.remove('open'); }
-function copyModal(){ var t=el('modal-ta'); t.select(); try{ document.execCommand('copy'); }catch(e){} el('modal-status').textContent='Skopiowano.'; }
+function copyModal(){
+  var t=el('modal-ta'), txt=t.value;
+  function done(){
+    el('modal-status').textContent = MOD_CHUNKS.length>1
+      ? 'Skopiowano część '+(MOD_I+1)+'/'+MOD_CHUNKS.length+'. Wklej na Discordzie, potem weź następną.'
+      : 'Skopiowano.';
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(fallback);
+  } else fallback();
+  function fallback(){
+    t.focus(); t.select(); t.setSelectionRange(0, txt.length);
+    try{ document.execCommand('copy'); done(); }
+    catch(e){ el('modal-status').textContent='Przeglądarka nie dała skopiować — zaznacz i skopiuj ręcznie.'; }
+  }
+}
 function doImport(){
   try{ applyData(JSON.parse(decodeURIComponent(escape(atob(el('modal-ta').value.trim()))))); closeModal(); flash('wczytano kod'); }
   catch(e){ el('modal-status').textContent='Nie rozpoznaję tego kodu. Wklej całość z eksportu.'; }
